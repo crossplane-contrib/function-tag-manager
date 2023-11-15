@@ -3,17 +3,17 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.1
-  name: inputs.template.fn.crossplane.io
+    controller-gen.kubebuilder.io/version: v0.13.0
+  name: tags.tags.fn.crossplane.io
 spec:
-  group: template.fn.crossplane.io
+  group: tags.fn.crossplane.io
   names:
     categories:
     - crossplane
-    kind: Input
-    listKind: InputList
-    plural: inputs
-    singular: input
+    kind: Tags
+    listKind: TagsList
+    plural: tags
+    singular: tags
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -21,15 +21,21 @@ spec:
       openAPIV3Schema:
         description: Input can be used to provide input to this Function.
         properties:
+          add:
+            additionalProperties:
+              type: string
+            description: AddTags are fields that will be added to every composed resource
+            type: object
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
               of an object. Servers should convert recognized schemas to the latest
               internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
-          example:
-            description: Example is an example field. Replace it with whatever input
-              you need. :)
-            type: string
+          ignore:
+            description: IgnoreTags is a map of tag keys to ignore
+            items:
+              type: string
+            type: array
           kind:
             description: 'Kind is a string value representing the REST resource this
               object represents. Servers may infer this from the endpoint the client
@@ -37,8 +43,9 @@ spec:
             type: string
           metadata:
             type: object
-        required:
-        - example
+          overwrite:
+            description: Overwrite is whether existing tags are overwritten
+            type: boolean
         type: object
     served: true
     storage: true

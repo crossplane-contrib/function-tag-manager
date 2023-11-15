@@ -1,6 +1,6 @@
 // Package v1beta1 contains the input type for this Function
 // +kubebuilder:object:generate=true
-// +groupName=template.fn.crossplane.io
+// +groupName=tags.fn.crossplane.io
 // +versionName=v1beta1
 package v1beta1
 
@@ -18,10 +18,17 @@ import (
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 // +kubebuilder:resource:categories=crossplane
-type Input struct {
+type Tags struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Example is an example field. Replace it with whatever input you need. :)
-	Example string `json:"example"`
+	// AddTags are fields that will be added to every composed resource
+	AddTags map[string]string `json:"addTags,omitempty"`
+
+	// IgnoreTags is a map of tag keys to ignore
+	IgnoreTags []string `json:"ignoreTags,omitempty"`
+
+	// // Overwrite is whether existing tags are overwritten
+	// Overwrite bool `json:"overwrite,omitempty"`
+	// we are using maps.Copy() which overwrites by default
 }
