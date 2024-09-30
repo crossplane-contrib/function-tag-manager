@@ -1,0 +1,116 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xnetworks.aws.platform.upbound.io
+spec:
+  group: aws.platform.upbound.io
+  names:
+    kind: XNetwork
+    plural: xnetworks
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  description: Network Parameters
+                  properties:
+                    additionalTags:
+                      description: A map of tags to add. Each tag must have a string key and value.
+                      type: object
+                    ignoreTags:
+                      desciption: List of tag keys to ignore
+                      type: array
+                      items:
+                        type: string
+                    id:
+                      type: string
+                      description: ID of this Network that other objects will use to refer to it.
+                    region:
+                      type: string
+                      description: Region is the region you'd like your resource to be created in.
+                    deletionPolicy:
+                      description: Delete the external resources when the Claim/XR is deleted. Defaults to Delete
+                      enum:
+                        - Delete
+                        - Orphan
+                      type: string
+                      default: Delete
+                    providerConfigName:
+                      description: Crossplane ProviderConfig to use for provisioning this resources
+                      type: string
+                      default: default
+                    vpcCidrBlock:
+                      type: string
+                      description: CIDR block for the VPC
+                      default: 192.168.0.0/16
+                    subnets:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          availabilityZone:
+                            type: string
+                          type:
+                            type: string
+                            enum:
+                              - public
+                              - private
+                          cidrBlock:
+                            type: string
+                      description: Subnets to create in the VPC
+                      required:
+                        - availabilityZone
+                        - type
+                        - cidrBlock
+                      default:
+                        - availabilityZone: us-west-2a
+                          type: public
+                          cidrBlock: 192.168.0.0/18
+                        - availabilityZone: us-west-2b
+                          type: public
+                          cidrBlock: 192.168.64.0/18
+                        - availabilityZone: us-west-2a
+                          type: private
+                          cidrBlock: 192.168.128.0/18
+                        - availabilityZone: us-west-2b
+                          type: private
+                          cidrBlock: 192.168.192.0/18
+                  required:
+                    - deletionPolicy
+                    - providerConfigName
+                    - id
+                    - region
+                    - subnets
+                    - vpcCidrBlock
+                  type: object
+              required:
+                - parameters
+            status:
+              type: object
+              properties:
+                vpcId:
+                  type: string
+                subnetIds:
+                  type: array
+                  items:
+                    type: string
+                publicSubnetIds:
+                  type: array
+                  items:
+                    type: string
+                privateSubnetIds:
+                  type: array
+                  items:
+                    type: string
+                securityGroupIds:
+                  type: array
+                  items:
+                    type: string
+

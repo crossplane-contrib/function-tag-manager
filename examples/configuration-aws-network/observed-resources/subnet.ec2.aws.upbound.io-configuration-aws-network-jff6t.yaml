@@ -1,0 +1,97 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: subnet-us-west-2b-private
+    crossplane.io/external-create-pending: "2024-09-26T15:52:01Z"
+    crossplane.io/external-create-succeeded: "2024-09-26T15:52:01Z"
+    crossplane.io/external-name: subnet-00b4714f12d6564a0
+  creationTimestamp: "2024-09-26T15:49:00Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 4
+  labels:
+    access: private
+    crossplane.io/claim-name: ""
+    crossplane.io/claim-namespace: ""
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+    zone: us-west-2b
+  name: configuration-aws-network-jff6t
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: XNetwork
+    name: configuration-aws-network
+    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
+  resourceVersion: "751051"
+  uid: 20411c17-1bf7-4e67-96d3-c28ffa2fefd3
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    availabilityZone: us-west-2b
+    cidrBlock: 192.168.192.0/18
+    privateDnsHostnameTypeOnLaunch: ip-name
+    region: us-west-2
+    tags:
+      crossplane-kind: subnet.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-jff6t
+      crossplane-providerconfig: default
+      kubernetes.io/role/internal-elb: "1"
+    vpcId: vpc-0ba6a91df9e9ba07e
+    vpcIdRef:
+      name: configuration-aws-network-8b25q
+    vpcIdSelector:
+      matchControllerRef: true
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: default
+status:
+  atProvider:
+    arn: arn:aws:ec2:us-west-2:123456789012:subnet/subnet-00b4714f12d6564a0
+    assignIpv6AddressOnCreation: false
+    availabilityZone: us-west-2b
+    availabilityZoneId: usw2-az2
+    cidrBlock: 192.168.192.0/18
+    customerOwnedIpv4Pool: ""
+    enableDns64: false
+    enableLniAtDeviceIndex: 0
+    enableResourceNameDnsARecordOnLaunch: false
+    enableResourceNameDnsAaaaRecordOnLaunch: false
+    id: subnet-00b4714f12d6564a0
+    ipv6CidrBlock: ""
+    ipv6CidrBlockAssociationId: ""
+    ipv6Native: false
+    mapCustomerOwnedIpOnLaunch: false
+    mapPublicIpOnLaunch: false
+    outpostArn: ""
+    ownerId: "123456789012"
+    privateDnsHostnameTypeOnLaunch: ip-name
+    tags:
+      crossplane-kind: subnet.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-jff6t
+      crossplane-providerconfig: default
+      kubernetes.io/role/internal-elb: "1"
+    tagsAll:
+      crossplane-kind: subnet.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-jff6t
+      crossplane-providerconfig: default
+      kubernetes.io/role/internal-elb: "1"
+    vpcId: vpc-0ba6a91df9e9ba07e
+  conditions:
+  - lastTransitionTime: "2024-09-26T15:52:01Z"
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2024-09-26T15:52:06Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2024-09-26T15:52:04Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
