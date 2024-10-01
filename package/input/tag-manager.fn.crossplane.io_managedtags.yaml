@@ -26,17 +26,33 @@ spec:
             items:
               properties:
                 fromFieldPath:
+                  description: |-
+                    FromFieldPath if type is FromCompositeFieldPath, get additional tags
+                    from the field in the Composite (like spec.parameters.tags)
                   type: string
                 policy:
-                  description: TagManagerPolicy sets what happens when the tag exists
-                    in the resource
+                  description: |-
+                    Policy determines what tag value to use in case there already is a matching tag key
+                    in the desired resource. Replace will overwrite the value, while Retain will keep
+                    the existing value in the desired resource.
+                  enum:
+                  - Replace
+                  - Retain
                   type: string
                 tags:
                   additionalProperties:
                     type: string
+                  description: Tags are tags to add to the resource in the form of
+                    a map
                   type: object
                 type:
-                  description: TagManagerType configures where we get tags from
+                  description: |-
+                    Type determines where tags are sourced from. FromValue are inline
+                    to the composition. FromCompositeFieldPath fetches tags from a field in
+                    the composite resource
+                  enum:
+                  - FromCompositeFieldPath
+                  - FromValue
                   type: string
               type: object
             type: array
@@ -54,15 +70,30 @@ spec:
             items:
               properties:
                 fromFieldPath:
+                  description: |-
+                    FromFieldPath if type is FromCompositeFieldPath, get keys to ignore
+                    from the field in the Composite (like spec.parameters.ignoreTags)
                   type: string
-                key:
-                  type: string
+                keys:
+                  description: Keys are tag keys to ignore for the FromValue type
+                  items:
+                    type: string
+                  type: array
                 policy:
                   description: TagManagerPolicy sets what happens when the tag exists
                     in the resource
+                  enum:
+                  - Replace
+                  - Retain
                   type: string
                 type:
-                  description: TagManagerType configures where we get tags from
+                  description: |-
+                    Type determines where tag keysare sourced from. FromValue are inline
+                    to the composition. FromCompositeFieldPath fetches keys from a field in
+                    the composite resource
+                  enum:
+                  - FromCompositeFieldPath
+                  - FromValue
                   type: string
               required:
               - type

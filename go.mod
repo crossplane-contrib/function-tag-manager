@@ -5,6 +5,7 @@ go 1.23
 toolchain go1.23.1
 
 require (
+	dario.cat/mergo v1.0.0
 	github.com/alecthomas/kong v0.8.1
 	github.com/crossplane/crossplane-runtime v1.17.0
 	github.com/crossplane/function-sdk-go v0.3.0
@@ -15,7 +16,6 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect

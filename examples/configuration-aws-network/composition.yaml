@@ -61,7 +61,7 @@ spec:
               labels:
                 networks.aws.platform.upbound.io/network-id: {{ $params.id }}
                 # function-tag-manager test
-                tag-manager.crossplane.io/ignore-resource: "True"
+                tag-manager.fn.crossplane.io/ignore-resource: "True"
               annotations:
                 {{ setResourceNameAnnotation ("igw") }}
             spec:
@@ -336,12 +336,23 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.optionalTags
           policy: Retain
-        # ignoreTags:
-        # - type: FromValue
-        #   policy: Replace
-        #   keys:
-        #   - external-tag-1
-        #   - external-tag-2
+        ignoreTags:
+        - type: FromValue
+          policy: Replace
+          keys:
+          - external-tag-1
+          - external-tag-2
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.ignoreTagKeysReplace
+          policy: Replace
+          keys:
+          - ignoreReplace1
+          - ignoreReplace2
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.ignoreTagKeysRetain
+          policy: Retain
+          keys:
+          - ignoreRetain1
     - step: automatically-detect-ready-composed-resources
       functionRef:
         name: crossplane-contrib-function-auto-ready

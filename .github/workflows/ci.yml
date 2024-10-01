@@ -14,8 +14,8 @@ on:
 
 env:
   # Common versions
-  GO_VERSION: '1.21.3'
-  GOLANGCI_VERSION: 'v1.54.2'
+  GO_VERSION: '1.23.1'
+  GOLANGCI_VERSION: 'v1.61.0'
   DOCKER_BUILDX_VERSION: 'v0.11.2'
 
   # These environment variables are important to the Crossplane CLI install.sh
@@ -43,13 +43,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: false  # The golangci-lint action does its own caching.
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ env.GOLANGCI_VERSION }}
 
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -116,7 +116,7 @@ jobs:
         run: ./crossplane xpkg build --package-file=${{ matrix.arch }}.xpkg --package-root=package/ --embed-runtime-image-tarball=runtime-${{ matrix.arch }}.tar
       
       - name: Upload Single-Platform Package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: packages
           path: "*.xpkg"
@@ -135,7 +135,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Single-Platform Packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: packages
           path: .
@@ -143,7 +143,7 @@ jobs:
       - name: Setup the Crossplane CLI
         run: "curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh"
 
-      - name: Login to Upbound
+      - name: Login to Dockerhub
         uses: docker/login-action@v3
         if: env.XPKG_ACCESS_ID != ''
         with:
@@ -152,10 +152,12 @@ jobs:
           password: ${{ secrets.XPKG_TOKEN }}
 
       # If a version wasn't explicitly passed as a workflow_dispatch input we
-      # default to version v0.0.0-shortsha, for example v0.0.0-8ed5691.
+      # default to version v0.0.0-<git-commit-date>-<git-short-sha>, for example
+      # v0.0.0-20231101115142-1091066df799. This is a simple implementation of
+      # Go's pseudo-versions: https://go.dev/ref/mod#pseudo-versions.
       - name: Set Default Multi-Platform Package Version
         if: env.XPKG_VERSION == ''
-        run: echo "XPKG_VERSION=v0.0.0-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "XPKG_VERSION=v0.0.0-$(date -d@$(git show -s --format=%ct) +%Y%m%d%H%M%S)-$(git rev-parse --short=12 HEAD)" >> $GITHUB_ENV
 
       - name: Push Multi-Platform Package to Upbound
         if: env.XPKG_ACCESS_ID != ''
