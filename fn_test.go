@@ -397,6 +397,11 @@ func TestFilterResourceByGroupKind(t *testing.T) {
 								IgnoreResourceLabel: "False",
 							},
 						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "us-west-1",
+							},
+						},
 					},
 					}},
 				},
@@ -414,6 +419,11 @@ func TestFilterResourceByGroupKind(t *testing.T) {
 						"metadata": map[string]any{
 							"name": "test-resource",
 						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "us-west-1",
+							},
+						},
 					},
 					}},
 				},
@@ -430,6 +440,28 @@ func TestFilterResourceByGroupKind(t *testing.T) {
 						"kind":       "ProviderConfig",
 						"metadata": map[string]any{
 							"name": "test-resource",
+						},
+					},
+					}},
+				},
+				filter: resourceFilter,
+			},
+			want: true,
+		},
+		"NotManagedResource": {
+			reason: "Filter Resources that aren't a Managed Resources",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "aws.upbound.io/v1beta1",
+						"kind":       "NotAnMR",
+						"metadata": map[string]any{
+							"name": "test-resource",
+						},
+						"spec": map[string]any{
+							"parameters": map[string]any{
+								"crossplane": "rocks",
+							},
 						},
 					},
 					}},

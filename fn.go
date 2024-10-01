@@ -162,12 +162,20 @@ func FilterResourceByGroupKind(desired *resource.DesiredComposed, filter Resourc
 	if _, ok := filter.SkipKinds[desired.Resource.GetKind()]; ok {
 		return true
 	}
+
+	// Filter out desired objects that are not a Managed Resource by looking for a forProvider field
+	var forProvider map[string]any
+	if err := fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider", &forProvider); err != nil {
+		return true
+	}
+
 	apiGroup := strings.Split(desired.Resource.GetAPIVersion(), "/")[0]
 	for k := range filter.IncludeAPIGroups {
 		if strings.Contains(apiGroup, k) {
 			return false
 		}
 	}
+	// Filter out any remaining resources
 	return true
 }
 
