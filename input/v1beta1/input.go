@@ -23,10 +23,12 @@ type ManagedTags struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// AddTags are fields that will be added to every composed resource
+	// +optional
 	AddTags []AddTag `json:"addTags,omitempty"`
 
 	// IgnoreTags is a map of tag keys to ignore if set on the
 	// resource outside of Crossplane
+	// +optional
 	IgnoreTags IgnoreTags `json:"ignoreTags,omitempty"`
 }
 
@@ -51,17 +53,50 @@ const (
 )
 
 type AddTag struct {
-	Type          TagManagerType   `json:"type,omitempty"`
-	FromFieldPath *string          `json:"fromFieldPath,omitempty"`
-	Tags          Tags             `json:"tags,omitempty"`
-	Policy        TagManagerPolicy `json:"policy,omitempty"`
+
+	// Type determines where tags are sourced from. FromValue are inline
+	// to the composition. FromCompositeFieldPath fetches tags from a field in
+	// the composite resource
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	// +optional
+	Type TagManagerType `json:"type,omitempty"`
+
+	// FromFieldPath if type is FromCompositeFieldPath, get additional tags
+	// from the field in the Composite (like spec.parameters.tags)
+	// +optional
+	FromFieldPath *string `json:"fromFieldPath,omitempty"`
+
+	// Tags are tags to add to the resource in the form of a map
+	// + optional
+	Tags Tags `json:"tags,omitempty"`
+
+	// Policy determines what tag value to use in case there already is a matching tag key
+	// in the desired resource. Replace will overwrite the value, while Retain will keep
+	// the existing value in the desired resource.
+	// +kubebuilder:validation:Enum=Replace;Retain
+	// +optional
+	Policy TagManagerPolicy `json:"policy,omitempty"`
 }
 
 type IgnoreTag struct {
-	Type          TagManagerType   `json:"type"`
-	FromFieldPath *string          `json:"fromFieldPath,omitempty"`
-	Key           *string          `json:"key,omitempty"`
-	Policy        TagManagerPolicy `json:"policy,omitempty"`
+	// Type determines where tag keysare sourced from. FromValue are inline
+	// to the composition. FromCompositeFieldPath fetches keys from a field in
+	// the composite resource
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	Type TagManagerType `json:"type"`
+
+	// FromFieldPath if type is FromCompositeFieldPath, get keys to ignore
+	// from the field in the Composite (like spec.parameters.ignoreTags)
+	// +optional
+	FromFieldPath *string `json:"fromFieldPath,omitempty"`
+
+	// Keys are tag keys to ignore for the FromValue type
+	// +optional
+	Keys []string `json:"keys,omitempty"`
+
+	// +kubebuilder:validation:Enum=Replace;Retain
+	// +optional
+	Policy TagManagerPolicy `json:"policy,omitempty"`
 }
 type IgnoreTags []IgnoreTag
 
@@ -86,13 +121,20 @@ func (i *IgnoreTag) GetType() TagManagerType {
 	return i.Type
 }
 
+func (a *IgnoreTag) GetPolicy() TagManagerPolicy {
+	if a == nil || a.Type == "" {
+		return ExistingTagPolicyReplace
+	}
+	return a.Policy
+}
+
 func GetKeys(i []IgnoreTag) []string {
 	var keys []string
 	for _, tag := range i {
 		switch t := tag.GetType(); t {
 		case FromValue:
-			if tag.Key != nil {
-				keys = append(keys, *tag.Key)
+			if tag.Keys != nil {
+				keys = append(keys, tag.Keys...)
 			}
 		}
 

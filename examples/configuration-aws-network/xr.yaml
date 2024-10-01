@@ -5,11 +5,17 @@ metadata:
 spec:
   parameters:
     additionalTags:
-      fromXR: value1
-      fromXR2: value2
+      replaceFromXR: value1
+      replaceFromXR2: value2
     optionalTags:
-      optionalFromXR: optional1
-      optionalFromXR2: optional2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    ignoreTagKeysReplace:
+    - ignoreReplace1
+    - ignoreReplace2
+    # if there is a conflict, keep the existing tags
+    ignoreTagKeysRetain:
+    - ignoreRetain1
     id: configuration-aws-network
     region: us-west-2
     vpcCidrBlock: 192.168.0.0/16

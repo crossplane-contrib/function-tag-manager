@@ -8,7 +8,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"dario.cat/mergo"
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
@@ -25,10 +24,6 @@ type Function struct {
 	log logging.Logger
 }
 
-// IgnoreCrossplaneTags tags added by Crossplane automatically
-// TODO: implement
-var IgnoreCrossplaneTags = []string{"crossplane-kind", "crossplane-name", "crossplane-providerconfig"}
-
 type IncludeAPIGroups map[string]bool
 type SkipKinds = map[string]bool
 
@@ -40,7 +35,6 @@ type ResourceFilter struct {
 }
 
 // Resources to skip by Kind
-
 var resourceFilter = ResourceFilter{
 	// IncludeAPIGroups
 	IncludeAPIGroups: IncludeAPIGroups{
@@ -54,18 +48,6 @@ var resourceFilter = ResourceFilter{
 		"ProviderConfig":          true,
 		"DeploymentRuntimeConfig": true,
 	},
-}
-
-// IgnoreResourceAnnotation set this label to `True` or `true` do disable
-// this function managing the resource
-const IgnoreResourceLabel = "tag-manager.crossplane.io/ignore-resource"
-
-// TagUpdater contains tags that are to be updated on a Desired Composed Resource
-type TagUpdater struct {
-	// Replace the tag values on the Desired Composed Resource will be overwritten if the keys match
-	Replace v1beta1.Tags
-	// Retain the tag values on the Desired Composed Resource if the keys match
-	Retain v1beta1.Tags
 }
 
 // RunFunction runs the Function
@@ -93,7 +75,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	)
 
 	// Process all the AddTags into 2 groups based on Policy: Replace or Retain
-	// we also need to resolve any tags coming from a fieldpath
+	// we also need to resolve any tags coming from a Composite fieldpath
 	additionalTags := f.ResolveAddTags(in.AddTags, oxr)
 
 	// The composed resources that actually exist.
@@ -119,7 +101,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			f.log.Debug("skipping resource due to GroupKind filter", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
-		err := AddTags(desired, additionalTags)
+		err := MergeTags(desired, additionalTags)
 		if err != nil {
 			f.log.Debug("error adding tags", string(name), err.Error())
 		}
@@ -127,31 +109,22 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		// Ignore tags only if there is an existing composed resource
 		observed, ok := observedComposed[name]
 		if ok {
-			IgnoreTags(desired, observed, in.IgnoreTags)
+			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed)
+			err := MergeTags(desired, *ignoreTags)
+			if err != nil {
+				f.log.Debug("error adding tags to ignore", string(name), err.Error())
+			}
+		} else {
+			continue
 		}
 	}
-	// For each of the ignore tags we add the tag to the desired state
-
-	// Add additional tags to the desired state
-
-	// for _, resource := range observedComposed {
-
-	// 	var tags map[string]string
-	// 	if err := fieldpath.Pave(resource.Resource.Object).GetValueInto("status.atProvider.tags", &tags); err != nil {
-	// 		fmt.Println("No tags found")
-	// 	}
-	// 	for _, dk := range IgnoreCrossplaneTags {
-	// 		delete(tags, dk)
-	// 	}
-	// 	fmt.Println(tags)
-	// }
 
 	if err := response.SetDesiredComposedResources(rsp, desiredComposed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot set desired composed resources in %T", rsp))
 		return rsp, nil
 	}
 
-	response.Normalf(rsp, "I was run with input")
+	response.Normalf(rsp, "Successfully Processed tags")
 
 	return rsp, nil
 }
@@ -177,51 +150,6 @@ func FilterResourceByGroupKind(desired *resource.DesiredComposed, filter Resourc
 	}
 	// Filter out any remaining resources
 	return true
-}
-
-// ResolveAddTags returns tags that will be Retained and Replaced
-func (f *Function) ResolveAddTags(in []v1beta1.AddTag, oxr *resource.Composite) TagUpdater {
-	tu := TagUpdater{}
-	for _, at := range in {
-		var tags v1beta1.Tags
-		switch t := at.GetType(); t {
-		case v1beta1.FromValue:
-			_ = mergo.Map(&tags, at.Tags)
-		case v1beta1.FromCompositeFieldPath: // resolve fields
-			err := fieldpath.Pave(oxr.Resource.Object).GetValueInto(*at.FromFieldPath, &tags)
-			if err != nil {
-				f.log.Debug("Unable to read tags from Composite field: ", *at.FromFieldPath, err)
-			}
-		}
-		if at.GetPolicy() == v1beta1.ExistingTagPolicyRetain {
-			_ = mergo.Map(&tu.Retain, tags)
-		} else {
-			_ = mergo.Map(&tu.Replace, tags)
-		}
-	}
-	return tu
-}
-
-// Adds tags to a Desired Composed Resource
-func AddTags(desired *resource.DesiredComposed, tu TagUpdater) error {
-	var desiredTags v1beta1.Tags
-	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider.tags", &desiredTags)
-
-	err := mergo.Map(&desiredTags, tu.Retain)
-	if err != nil {
-		return err
-	}
-	err = mergo.Map(&desiredTags, tu.Replace, mergo.WithOverride)
-	if err != nil {
-		return err
-	}
-	err = desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
-
-	return err
-}
-
-func IgnoreTags(desired *resource.DesiredComposed, observed resource.ObservedComposed, tags []v1beta1.IgnoreTag) {
-
 }
 
 // IgnoreResource whether this resource has a label set to ignore

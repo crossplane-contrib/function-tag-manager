@@ -12,17 +12,19 @@ Run the `./render.sh` command in this directory.
 ```
 
 ```shell
-crossplane render network-xrd.yaml composition.yaml functions.yaml --observed-resources observed-resources --include-full-xr
+crossplane render xr.yaml composition.yaml functions.yaml --observed-resources observed-resources --include-full-xr
 ```
 
 ## Updated CompositeResourceDefinition
 
-The [xrd](xrd.yaml) has been updated with the following 2 fields:
+The [xrd](xrd.yaml) has been updated with the following fields:
 
-- `spec.parameters.ignoretags`. A list of tag keys to ignore
+- `spec.parameters.ignoreTagKeysReplace`. A list of tag keys to ignore if set by an external system
+- `spec.parameters.gnoreTagKeysRetain`. A list of tag keys to ignore if set by an external system. If the tag is defined on the desired resource the external value is ignored
 - `spec.paramaters.additionalTags`. A map of additional tags to add to each resources
+- `spec.paramaters.optionalTags`. A map of additional tags to add to each resources only if the resource doesn't have a different value
 
-## Skipping resources 
+## Skipping Resources
 
 Applying the following label to a resource will cause the function to skip managing tags on that resource:
 
@@ -35,4 +37,4 @@ metadata:
 ## Observed Resources
 
 In the [observed-resource](observed-resources) directory are resources that have had
-additional tags added for testing. 
+additional tags added for testing.
