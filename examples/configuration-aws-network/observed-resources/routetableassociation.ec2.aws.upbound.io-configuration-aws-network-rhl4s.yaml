@@ -1,0 +1,69 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: rta-us-west-2b-private
+    crossplane.io/external-create-pending: "2024-09-26T15:53:03Z"
+    crossplane.io/external-create-succeeded: "2024-09-26T15:53:03Z"
+    crossplane.io/external-name: rtbassoc-051d4fcf5b7c04741
+  creationTimestamp: "2024-09-26T15:49:00Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 3
+  labels:
+    crossplane.io/claim-name: ""
+    crossplane.io/claim-namespace: ""
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+  name: configuration-aws-network-rhl4s
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: XNetwork
+    name: configuration-aws-network
+    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
+  resourceVersion: "751304"
+  uid: d8c98d72-924c-44da-bbba-272c9f5f49ec
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    region: us-west-2
+    routeTableId: rtb-0b071e65c07335818
+    routeTableIdRef:
+      name: configuration-aws-network-tzdwz
+    routeTableIdSelector:
+      matchControllerRef: true
+    subnetId: subnet-00b4714f12d6564a0
+    subnetIdRef:
+      name: configuration-aws-network-jff6t
+    subnetIdSelector:
+      matchControllerRef: true
+      matchLabels:
+        access: private
+        zone: us-west-2b
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: default
+status:
+  atProvider:
+    gatewayId: ""
+    id: rtbassoc-051d4fcf5b7c04741
+    routeTableId: rtb-0b071e65c07335818
+    subnetId: subnet-00b4714f12d6564a0
+  conditions:
+  - lastTransitionTime: "2024-09-26T15:53:03Z"
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2024-09-26T15:53:11Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2024-09-26T15:53:06Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation

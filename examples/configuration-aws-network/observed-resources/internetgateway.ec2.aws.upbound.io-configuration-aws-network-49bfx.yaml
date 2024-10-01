@@ -1,0 +1,73 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: InternetGateway
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: igw
+    crossplane.io/external-create-pending: "2024-09-26T15:52:01Z"
+    crossplane.io/external-create-succeeded: "2024-09-26T15:52:01Z"
+    crossplane.io/external-name: igw-0985d4f86736dcbdc
+  creationTimestamp: "2024-09-26T15:49:00Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 3
+  labels:
+    crossplane.io/claim-name: ""
+    crossplane.io/claim-namespace: ""
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+  name: configuration-aws-network-49bfx
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: XNetwork
+    name: configuration-aws-network
+    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
+  resourceVersion: "751261"
+  uid: df3a5246-94fa-4702-9890-04015e279e9e
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    region: us-west-2
+    tags:
+      crossplane-kind: internetgateway.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-49bfx
+      crossplane-providerconfig: default
+    vpcId: vpc-0ba6a91df9e9ba07e
+    vpcIdRef:
+      name: configuration-aws-network-8b25q
+    vpcIdSelector:
+      matchControllerRef: true
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: default
+status:
+  atProvider:
+    arn: arn:aws:ec2:us-west-2:123456789012:internet-gateway/igw-0985d4f86736dcbdc
+    id: igw-0985d4f86736dcbdc
+    ownerId: "123456789012"
+    tags:
+      crossplane-kind: internetgateway.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-49bfx
+      crossplane-providerconfig: default
+    tagsAll:
+      crossplane-kind: internetgateway.ec2.aws.upbound.io
+      crossplane-name: configuration-aws-network-49bfx
+      crossplane-providerconfig: default
+    vpcId: vpc-0ba6a91df9e9ba07e
+  conditions:
+  - lastTransitionTime: "2024-09-26T15:52:01Z"
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2024-09-26T15:53:04Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2024-09-26T15:52:04Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation

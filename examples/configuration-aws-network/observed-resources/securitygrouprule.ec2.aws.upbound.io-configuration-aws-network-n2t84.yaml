@@ -1,0 +1,75 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupRule
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: sgrp
+    crossplane.io/external-create-pending: "2024-09-26T15:53:03Z"
+    crossplane.io/external-create-succeeded: "2024-09-26T15:53:03Z"
+    crossplane.io/external-name: sgrule-95637850
+  creationTimestamp: "2024-09-26T15:49:00Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 3
+  labels:
+    crossplane.io/claim-name: ""
+    crossplane.io/claim-namespace: ""
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+  name: configuration-aws-network-n2t84
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: XNetwork
+    name: configuration-aws-network
+    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
+  resourceVersion: "751295"
+  uid: 02c4b3b0-73c9-420c-83d8-364a33a942b6
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    cidrBlocks:
+    - 0.0.0.0/0
+    description: Everywhere
+    fromPort: 5432
+    protocol: tcp
+    region: us-west-2
+    securityGroupId: sg-0f048301b762a1c7c
+    securityGroupIdRef:
+      name: configuration-aws-network-pbbvn
+    securityGroupIdSelector:
+      matchControllerRef: true
+    toPort: 5432
+    type: ingress
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: default
+status:
+  atProvider:
+    cidrBlocks:
+    - 0.0.0.0/0
+    description: Everywhere
+    fromPort: 5432
+    id: sgrule-95637850
+    protocol: tcp
+    securityGroupId: sg-0f048301b762a1c7c
+    securityGroupRuleId: sgr-0c395bb6d22715315
+    self: false
+    toPort: 5432
+    type: ingress
+  conditions:
+  - lastTransitionTime: "2024-09-26T15:53:03Z"
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2024-09-26T15:53:10Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2024-09-26T15:53:06Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation

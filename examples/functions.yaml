@@ -1,0 +1,17 @@
+
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-patch-and-transform
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform:v0.2.1
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-tag-manager
+  annotations:
+     render.crossplane.io/runtime: Development
+spec:
+  package: xpkg.upbound.io/borrelli-org/function-patch-and-transform:v0.1.0
+

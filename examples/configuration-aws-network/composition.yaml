@@ -1,0 +1,347 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xnetworks.aws.platform.upbound.io
+  labels:
+    provider: aws
+    function: go-templating
+spec:
+  compositeTypeRef:
+    apiVersion: aws.platform.upbound.io/v1alpha1
+    kind: XNetwork
+  mode: Pipeline
+  pipeline:
+    - step: go-templating
+      functionRef:
+        name: crossplane-contrib-function-go-templating
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{ $params := .observed.composite.resource.spec.parameters }}
+            apiVersion: aws.upbound.io/v1beta1
+            kind: ProviderConfig
+            metadata:
+              name: default
+              annotations:
+                {{ setResourceNameAnnotation ("providerConfig") }}
+            spec:
+              credentials:
+                source: Secret
+                secretRef:
+                  name: aws-creds
+                  namespace: upbound-system
+                  key: creds
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: VPC
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("vpc") }}
+            spec:
+              forProvider:
+                cidrBlock: {{ $params.vpcCidrBlock }}
+                enableDnsHostnames: true
+                enableDnsSupport: true
+                tags:
+                  Name: {{ .observed.composite.resource.metadata.name }}
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: InternetGateway
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+                # function-tag-manager test
+                tag-manager.crossplane.io/ignore-resource: "True"
+              annotations:
+                {{ setResourceNameAnnotation ("igw") }}
+            spec:
+              forProvider:
+                vpcIdSelector:
+                  matchControllerRef: true
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+
+            {{ $region := $params.region }}
+            {{ $deletionPolicy := $params.deletionPolicy | default "Delete" }}
+
+            {{- range $i, $subnet := $params.subnets }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: Subnet
+            metadata:
+              labels:
+                  zone: {{ $subnet.availabilityZone }}
+                  {{- if eq $subnet.type "private" }}
+                  access: private
+                  {{- else }}
+                  access: public
+                  {{- end }}
+                  networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "subnet-%s-%s" $subnet.availabilityZone $subnet.type) }}
+            spec:
+              forProvider:
+                cidrBlock: {{ $subnet.cidrBlock }}
+                {{ if eq $subnet.type "public" }}
+                mapPublicIpOnLaunch: true
+                {{ end }}
+                tags:
+                {{- if eq $subnet.type "private" }}
+                  kubernetes.io/role/internal-elb: "1"
+                {{- else }}
+                  kubernetes.io/role/elb: "1"
+                {{- end }}
+                {{- if eq $subnet.type "public" }}
+                  networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+                {{- end }}
+                region: {{ $region }}
+                vpcIdSelector:
+                  matchControllerRef: true
+                availabilityZone: {{ $subnet.availabilityZone }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $deletionPolicy }}
+            {{- end }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: RouteTable
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("rt") }}
+            spec:
+              forProvider:
+                vpcIdSelector:
+                  matchControllerRef: true
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: Route
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("route") }}
+            spec:
+              forProvider:
+                destinationCidrBlock: 0.0.0.0/0
+                gatewayIdSelector:
+                  matchControllerRef: true
+                routeTableIdSelector:
+                  matchControllerRef: true
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: MainRouteTableAssociation
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("mrt") }}
+            spec:
+              forProvider:
+                routeTableIdSelector:
+                  matchControllerRef: true
+                vpcIdSelector:
+                  matchControllerRef: true
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            {{- range $i, $subnet := $params.subnets }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: RouteTableAssociation
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "rta-%s-%s" $subnet.availabilityZone $subnet.type) }}
+            spec:
+              forProvider:
+                region: {{ $region }}
+                routeTableIdSelector:
+                  matchControllerRef: true
+                subnetIdSelector:
+                  matchControllerRef: true
+                  matchLabels:
+                    {{- if eq $subnet.type "private" }}
+                    access: private
+                    {{- else }}
+                    access: public
+                    {{- end }}
+                    zone: {{ $subnet.availabilityZone }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $deletionPolicy }}
+            {{- end }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: SecurityGroup
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("sg") }}
+            spec:
+              forProvider:
+                description: Allow access to databases
+                name: platform-ref-aws-cluster
+                vpcIdSelector:
+                  matchControllerRef: true
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: SecurityGroupRule
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("sgrp") }}
+            spec:
+              forProvider:
+                cidrBlocks:
+                  - 0.0.0.0/0
+                description: Everywhere
+                fromPort: 5432
+                protocol: tcp
+                securityGroupIdSelector:
+                  matchControllerRef: true
+                toPort: 5432
+                type: ingress
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            ---
+            apiVersion: ec2.aws.upbound.io/v1beta1
+            kind: SecurityGroupRule
+            metadata:
+              labels:
+                networks.aws.platform.upbound.io/network-id: {{ $params.id }}
+              annotations:
+                {{ setResourceNameAnnotation ("sgrm") }}
+            spec:
+              forProvider:
+                cidrBlocks:
+                  - 0.0.0.0/0
+                description: Everywhere
+                fromPort: 3306
+                protocol: tcp
+                securityGroupIdSelector:
+                  matchControllerRef: true
+                toPort: 3306
+                type: ingress
+                region: {{ $params.region }}
+              providerConfigRef:
+                name: {{ $params.providerConfigName }}
+              deletionPolicy: {{ $params.deletionPolicy | default "Delete" }}
+            ---
+            apiVersion: {{ .observed.composite.resource.apiVersion }}
+            kind: {{ .observed.composite.resource.kind }}
+            status:
+              {{- $vpcId := dig "resources" "vpc" "resource" "status" "atProvider" "id" "" $.observed }}
+              {{- if $vpcId }}
+              vpcId: {{ $vpcId }}
+              {{- end }}
+
+              {{- $subnetIds := list }}
+              {{- range $i, $subnet := $params.subnets }}
+              {{- $subnetId := dig "resources" (printf "subnet-%s-%s" $subnet.availabilityZone $subnet.type) "resource" "metadata" "annotations" "crossplane.io/external-name" "" $.observed }}
+              {{- if $subnetId }}
+              {{- $subnetIds = append $subnetIds $subnetId }}
+              {{- end }}
+              {{- end }}
+              {{- if $subnetIds }}
+              subnetIds:
+                {{- range $id := $subnetIds }}
+                - {{ $id }}
+                {{- end }}
+              {{- end }}
+
+              {{- $publicSubnetIds := list }}
+              {{- range $i, $subnet := $params.subnets }}
+              {{- if eq $subnet.type "public" }}
+              {{- $publicSubnetId := dig "resources" (printf "subnet-%s-%s" $subnet.availabilityZone $subnet.type) "resource" "metadata" "annotations" "crossplane.io/external-name" "" $.observed }}
+              {{- if $publicSubnetId }}
+              {{- $publicSubnetIds = append $publicSubnetIds $publicSubnetId }}
+              {{- end }}
+              {{- end }}
+              {{- end }}
+              {{- if $publicSubnetIds }}
+              publicSubnetIds:
+                {{- range $id := $publicSubnetIds }}
+                - {{ $id }}
+                {{- end }}
+              {{- end }}
+
+              {{- $privateSubnetIds := list }}
+              {{- range $i, $subnet := $params.subnets }}
+              {{- if eq $subnet.type "private" }}
+              {{- $privateSubnetId := dig "resources" (printf "subnet-%s-%s" $subnet.availabilityZone $subnet.type) "resource" "metadata" "annotations" "crossplane.io/external-name" "" $.observed }}
+              {{- if $privateSubnetId }}
+              {{- $privateSubnetIds = append $privateSubnetIds $privateSubnetId }}
+              {{- end }}
+              {{- end }}
+              {{- end }}
+              {{- if $privateSubnetIds }}
+              privateSubnetIds:
+                {{- range $id := $privateSubnetIds }}
+                - {{ $id }}
+                {{- end }}
+              {{- end }}
+
+              {{- $sgId := dig "resources" "sg" "resource" "metadata" "annotations" "crossplane.io/external-name" "" $.observed }}
+              {{- if $sgId }}
+              securityGroupIds:
+                - {{ $sgId }}
+              {{- end }}
+    - step: manage-tags
+      functionRef:
+        name: borrelli-org-function-tag-manager
+      input:
+        apiVersion: tag-manger.fn.crossplane.io/v1beta1
+        kind: ManagedTags
+        addTags:
+        - type: FromValue
+          policy: Replace
+          tags: 
+            from: value
+            add: tags
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.additionalTags
+          policy: Replace
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.optionalTags
+          policy: Retain
+        # ignoreTags:
+        # - type: FromValue
+        #   policy: Replace
+        #   keys:
+        #   - external-tag-1
+        #   - external-tag-2
+    - step: automatically-detect-ready-composed-resources
+      functionRef:
+        name: crossplane-contrib-function-auto-ready
