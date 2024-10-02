@@ -7,7 +7,6 @@ spec:
     additionalTags:
       replaceFromXR: value1
       replaceFromXR2: value2
-      add: me
     optionalTags:
       retainFromXR: optional1
       retainFromXR2: optional2
