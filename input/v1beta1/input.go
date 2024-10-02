@@ -79,7 +79,7 @@ type AddTag struct {
 }
 
 type IgnoreTag struct {
-	// Type determines where tag keysare sourced from. FromValue are inline
+	// Type determines where tag keys are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches keys from a field in
 	// the composite resource
 	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue

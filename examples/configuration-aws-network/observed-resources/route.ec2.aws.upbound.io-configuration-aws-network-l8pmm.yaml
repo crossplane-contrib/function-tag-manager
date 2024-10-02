@@ -46,37 +46,37 @@ spec:
   - '*'
   providerConfigRef:
     name: default
-status:
-  atProvider:
-    carrierGatewayId: ""
-    coreNetworkArn: ""
-    destinationCidrBlock: 0.0.0.0/0
-    destinationIpv6CidrBlock: ""
-    destinationPrefixListId: ""
-    egressOnlyGatewayId: ""
-    gatewayId: igw-0985d4f86736dcbdc
-    id: r-rtb-0b071e65c073358181080289494
-    instanceId: ""
-    instanceOwnerId: ""
-    localGatewayId: ""
-    natGatewayId: ""
-    networkInterfaceId: ""
-    origin: CreateRoute
-    routeTableId: rtb-0b071e65c07335818
-    state: active
-    transitGatewayId: ""
-    vpcEndpointId: ""
-    vpcPeeringConnectionId: ""
-  conditions:
-  - lastTransitionTime: "2024-09-26T15:53:05Z"
-    reason: ReconcileSuccess
-    status: "True"
-    type: Synced
-  - lastTransitionTime: "2024-09-26T15:53:09Z"
-    reason: Available
-    status: "True"
-    type: Ready
-  - lastTransitionTime: "2024-09-26T15:53:07Z"
-    reason: Success
-    status: "True"
-    type: LastAsyncOperation
+# status:
+#   atProvider:
+#     carrierGatewayId: ""
+#     coreNetworkArn: ""
+#     destinationCidrBlock: 0.0.0.0/0
+#     destinationIpv6CidrBlock: ""
+#     destinationPrefixListId: ""
+#     egressOnlyGatewayId: ""
+#     gatewayId: igw-0985d4f86736dcbdc
+#     id: r-rtb-0b071e65c073358181080289494
+#     instanceId: ""
+#     instanceOwnerId: ""
+#     localGatewayId: ""
+#     natGatewayId: ""
+#     networkInterfaceId: ""
+#     origin: CreateRoute
+#     routeTableId: rtb-0b071e65c07335818
+#     state: active
+#     transitGatewayId: ""
+#     vpcEndpointId: ""
+#     vpcPeeringConnectionId: ""
+#   conditions:
+#   - lastTransitionTime: "2024-09-26T15:53:05Z"
+#     reason: ReconcileSuccess
+#     status: "True"
+#     type: Synced
+#   - lastTransitionTime: "2024-09-26T15:53:09Z"
+#     reason: Available
+#     status: "True"
+#     type: Ready
+#   - lastTransitionTime: "2024-09-26T15:53:07Z"
+#     reason: Success
+#     status: "True"
+#     type: LastAsyncOperation

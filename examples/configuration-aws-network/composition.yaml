@@ -24,9 +24,9 @@ spec:
             apiVersion: aws.upbound.io/v1beta1
             kind: ProviderConfig
             metadata:
-              name: default
               annotations:
                 {{ setResourceNameAnnotation ("providerConfig") }}
+                gotemplating.fn.crossplane.io/ready: "True"
             spec:
               credentials:
                 source: Secret
@@ -60,8 +60,6 @@ spec:
             metadata:
               labels:
                 networks.aws.platform.upbound.io/network-id: {{ $params.id }}
-                # function-tag-manager test
-                tag-manager.fn.crossplane.io/ignore-resource: "True"
               annotations:
                 {{ setResourceNameAnnotation ("igw") }}
             spec:
@@ -328,8 +326,8 @@ spec:
         - type: FromValue
           policy: Replace
           tags: 
-            from: value
-            add: tags
+            fromValue: tagFromValue
+            fromValue2: tagFromValue2
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.additionalTags
           policy: Replace

@@ -225,6 +225,12 @@ func TestResolveIgnoreTags(t *testing.T) {
 		args   args
 		want   want
 	}{
+		"ReturnNilOnMissingStatus": {
+			reason: "With empty Observed Status return Nil",
+			args:   args{},
+			want:   want{nil},
+		},
+
 		"EmptyInput": {
 			reason: "With no input should return an empty TagUpdater",
 			args: args{
