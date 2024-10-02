@@ -3,8 +3,7 @@
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
 
-Currently only AWS resources that support tags are managed. See [filter.go](filter.go)
-for a list of resource that will be manged by this function.
+Currently only AWS resources that support tags are managed.
 
 There several use cases for this Function:
 
@@ -151,23 +150,10 @@ metadata:
 
 ## Filtering Resources
 
-The initial version of this function support simple filters.
+This function currently supports a subset of AWS that allow setting of tags.
 
-### Managed Resource Filter
-
-If the resource does not have a `spec.forProvider` field it skipped.
-
-### API Group Filter
-
-If the resources does not contain one of the following API groups, it is skipped:
-
-- `aws.upbound.io`
-- `azure.upbound.io`
-- `gcp.upbound.io`
-
-### Crossplane Resources
-
-Crossplane Resources like ProviderConfigs are skipped.
+A scan of the 1.14 AWS provider shows that 475 resources support tags and 482 do not.
+The Provider CRDs were scanned to generate the list in [filter.go](filter.go).
 
 ## Developing this Function
 
