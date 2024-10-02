@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"dario.cat/mergo"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
 	"github.com/crossplane/function-sdk-go/resource"
@@ -70,13 +68,12 @@ func MergeTags(desired *resource.DesiredComposed, tu TagUpdater) error {
 func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed) *TagUpdater {
 	tu := &TagUpdater{}
 	if observed == nil {
-		return tu
+		return nil
 	}
 	var observedTags v1beta1.Tags
 	if err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider.tags", &observedTags); err != nil {
-		//f.log.Debug("unable to fetch tags from observed resource", string(observed.Resource.GetName()), observed.Resource.GroupVersionKind().String())
-		fmt.Println(err)
-		return tu
+		f.log.Debug("unable to fetch tags from observed resource", string(observed.Resource.GetName()), observed.Resource.GroupVersionKind().String())
+		return nil
 	}
 	for _, at := range in {
 		var keys []string
@@ -97,9 +94,15 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 		}
 
 		if at.GetPolicy() == v1beta1.ExistingTagPolicyRetain {
-			_ = mergo.Map(&tu.Retain, tags)
+			err := mergo.Map(&tu.Retain, tags)
+			if err != nil {
+				f.log.Debug("unable to merge tags from observed resource", string(observed.Resource.GetName()), observed.Resource.GroupVersionKind().String(), "error", err.Error())
+			}
 		} else {
-			_ = mergo.Map(&tu.Replace, tags)
+			err := mergo.Map(&tu.Replace, tags)
+			if err != nil {
+				f.log.Debug("unable to merge tags from observed resource", string(observed.Resource.GetName()), observed.Resource.GroupVersionKind().String(), "error", err.Error())
+			}
 		}
 	}
 	return tu

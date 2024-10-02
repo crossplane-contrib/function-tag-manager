@@ -1,7 +1,10 @@
-# function-manage-tags
+# function-tags-manager
 
-`function-manage-tags` is a [Crossplane](https://crossplane.io) function that allows
+`function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
+
+Currently only AWS resources that support tags are managed. See [filter.go](filter.go)
+for a list of resource that will be manged by this function.
 
 There several use cases for this Function:
 
@@ -20,7 +23,7 @@ kind: Function
 metadata:
   name: borrelli-org-function-tag-manager
 spec:
-  package: xpkg.upbound.io/borrelli-org/function-tag-manager:v0.1.0
+  package: xpkg.upbound.io/borrelli-org/function-tag-manager:v0.2.0
 ```
 
 ## Using this Function in a Composition
@@ -60,7 +63,7 @@ created Desired State. Below is an example pipeline step:
       - ignoreReplace1
       - ignoreReplace2
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.ignoreTagKeysReptain
+      fromFieldPath: spec.parameters.ignoreTagKeyRetain
       policy: Retain
       keys:
       - ignoreRetain1
@@ -203,11 +206,17 @@ $ curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/instal
 To build the function, run:
 
 ```shell
-docker build . --tag=function-unit-test-runtime
+docker build . --tag=function-tag-manager
 ```
 
-Next create the Crossplane Package:
+Next create the Crossplane Package, embedding the function we just built:
 
 ```shell
-crossplane xpkg build -f package --embed-runtime-image=function-unit-test-runtime -o function-tag-manager.xpkg
+crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o function-tag-manager.xpkg
+```
+
+I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
+
+```shell
+up xpkg push xpkg.upbound.io/borrelli-org/function-tag-manager:v0.1.0 -f function-tag-manager.xpkg
 ```

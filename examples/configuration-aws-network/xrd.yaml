@@ -23,9 +23,22 @@ spec:
                   properties:
                     additionalTags:
                       description: A map of tags to add. Each tag must have a string key and value.
+                      additionalProperties:
+                        type: string
                       type: object
-                    ignoreTags:
-                      desciption: List of tag keys to ignore
+                    optionalTags:
+                      description: A map of tags to add. Each tag must have a string key and value.
+                      additionalProperties:
+                        type: string
+                      type: object
+                      x-kubernetes-map-type: granular
+                    ignoreTagKeysReplace:
+                      description: List of tag keys to ignore
+                      type: array
+                      items:
+                        type: string
+                    ignoreTagKeysRetain:
+                      description: List of tag keys to retain
                       type: array
                       items:
                         type: string

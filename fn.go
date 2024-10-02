@@ -24,35 +24,9 @@ type Function struct {
 	log logging.Logger
 }
 
-type IncludeAPIGroups map[string]bool
-type SkipKinds = map[string]bool
-
-// ResourceFilter are built-in resource filters. We only
-// want to match tags on resources that support them
-type ResourceFilter struct {
-	IncludeAPIGroups IncludeAPIGroups
-	SkipKinds        SkipKinds
-}
-
-// Resources to skip by Kind
-var resourceFilter = ResourceFilter{
-	// IncludeAPIGroups
-	IncludeAPIGroups: IncludeAPIGroups{
-		"aws.upbound.io":   true,
-		"azure.upbound.io": true,
-		"gcp.upbound.io":   true,
-	},
-	// Resources to skip by Kind
-	SkipKinds: SkipKinds{
-		"Provider":                true,
-		"ProviderConfig":          true,
-		"DeploymentRuntimeConfig": true,
-	},
-}
-
 // RunFunction runs the Function
 func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
-	f.log.Info("Running Function", "tag", req.GetMeta().GetTag())
+	f.log.Info("Running Function", "tag-manager", req.GetMeta().GetTag())
 
 	rsp := response.To(req, response.DefaultTTL)
 
@@ -69,7 +43,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 
 	f.log.WithValues(
-		"xr-apiversion", oxr.Resource.GetAPIVersion(),
+		"xr-d", oxr.Resource.GetAPIVersion(),
 		"xr-kind", oxr.Resource.GetKind(),
 		"xr-name", oxr.Resource.GetName(),
 	)
@@ -93,29 +67,30 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 
 	for name, desired := range desiredComposed {
+		desired.Resource.GetObjectKind()
 		if IgnoreResource(desired) {
 			f.log.Debug("skipping resource due to label", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
-		if FilterResourceByGroupKind(desired, resourceFilter) {
-			f.log.Debug("skipping resource due to GroupKind filter", string(name), desired.Resource.GroupVersionKind().String())
+		if !SupportedManagedResource(desired, ManagedResourceFilter) {
+			f.log.Debug("skipping resource that doesn't support tags", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
+
 		err := MergeTags(desired, additionalTags)
 		if err != nil {
 			f.log.Debug("error adding tags", string(name), err.Error())
 		}
 
-		// Ignore tags only if there is an existing composed resource
-		observed, ok := observedComposed[name]
-		if ok {
+		// Ignore tags only if there is an existing Composed resource with tags in the status
+		if observed, ok := observedComposed[name]; ok {
 			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed)
-			err := MergeTags(desired, *ignoreTags)
-			if err != nil {
-				f.log.Debug("error adding tags to ignore", string(name), err.Error())
+			if ignoreTags != nil {
+				err := MergeTags(desired, *ignoreTags)
+				if err != nil {
+					f.log.Debug("error adding tags to ignore", string(name), err.Error())
+				}
 			}
-		} else {
-			continue
 		}
 	}
 
@@ -127,29 +102,6 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	response.Normalf(rsp, "Successfully Processed tags")
 
 	return rsp, nil
-}
-
-// FilterResource returns true if a resource should be skipped by Group or Kind
-// by default resources are skipped
-func FilterResourceByGroupKind(desired *resource.DesiredComposed, filter ResourceFilter) bool {
-	if _, ok := filter.SkipKinds[desired.Resource.GetKind()]; ok {
-		return true
-	}
-
-	// Filter out desired objects that are not a Managed Resource by looking for a forProvider field
-	var forProvider map[string]any
-	if err := fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider", &forProvider); err != nil {
-		return true
-	}
-
-	apiGroup := strings.Split(desired.Resource.GetAPIVersion(), "/")[0]
-	for k := range filter.IncludeAPIGroups {
-		if strings.Contains(apiGroup, k) {
-			return false
-		}
-	}
-	// Filter out any remaining resources
-	return true
 }
 
 // IgnoreResource whether this resource has a label set to ignore
