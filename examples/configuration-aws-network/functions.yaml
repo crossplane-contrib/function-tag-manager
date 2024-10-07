@@ -16,10 +16,10 @@ spec:
 apiVersion: pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: borrelli-org-function-tag-manager
+  name: crossplane-contrib-function-tag-manager
   # Comment out for local development
-  # annotations:
-  #   render.crossplane.io/runtime: Development
+  annotations:
+    render.crossplane.io/runtime: Development
 spec:
-  package: xpkg.upbound.io/borrelli-org/function-tag-manager:v0.2.0
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.0
 

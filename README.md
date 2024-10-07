@@ -21,9 +21,9 @@ will move to crossplane-contrib once initial testing is successful.
 apiVersion: pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: borrelli-org-function-tag-manager
+  name: crossplane-contrib-function-tag-manager
 spec:
-  package: xpkg.upbound.io/borrelli-org/function-tag-manager:v0.2.0
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.0
 ```
 
 ## Using this Function in a Composition
@@ -34,7 +34,7 @@ created Desired State. Below is an example pipeline step:
 ```yaml
 - step: manage-tags
   functionRef:
-    name: borrelli-org-function-tag-manager
+    name: crossplane-contrib-function-tag-manager
   input:
     apiVersion: tag-manger.fn.crossplane.io/v1beta1
     kind: ManagedTags
@@ -219,5 +219,5 @@ crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o f
 I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
 
 ```shell
-up xpkg push xpkg.upbound.io/borrelli-org/function-tag-manager:v0.1.0 -f function-tag-manager.xpkg
+up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.1.0 -f function-tag-manager.xpkg
 ```
