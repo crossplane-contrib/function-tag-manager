@@ -14,8 +14,8 @@ on:
 
 env:
   # Common versions
-  GO_VERSION: '1.23.1'
-  GOLANGCI_VERSION: 'v1.61.0'
+  GO_VERSION: '1.21.3'
+  GOLANGCI_VERSION: 'v1.54.2'
   DOCKER_BUILDX_VERSION: 'v0.11.2'
 
   # These environment variables are important to the Crossplane CLI install.sh
@@ -37,7 +37,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,13 +48,16 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: false  # The golangci-lint action does its own caching.
 
+      - name: Check go mod tidy
+        run: go mod tidy && git diff --exit-code go.mod go.sum
+
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ env.GOLANGCI_VERSION }}
 
   unit-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,9 +73,9 @@ jobs:
   # We want to build most packages for the amd64 and arm64 architectures. To
   # speed this up we build single-platform packages in parallel. We then upload
   # those packages to GitHub as a build artifact. The push job downloads those
-  # artifacts and pushes them as a single multi-platform package. 
+  # artifacts and pushes them as a single multi-platform package.
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: true
       matrix:
@@ -98,7 +101,7 @@ jobs:
       # the build, per https://docs.docker.com/build/cache/backends/gha/.
       - name: Build Runtime
         id: image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/${{ matrix.arch }}
@@ -108,17 +111,17 @@ jobs:
           build-args:
             GO_VERSION=${{ env.GO_VERSION }}
           outputs: type=docker,dest=runtime-${{ matrix.arch }}.tar
-      
+
       - name: Setup the Crossplane CLI
         run: "curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh"
 
       - name: Build Package
         run: ./crossplane xpkg build --package-file=${{ matrix.arch }}.xpkg --package-root=package/ --embed-runtime-image-tarball=runtime-${{ matrix.arch }}.tar
-      
+
       - name: Upload Single-Platform Package
         uses: actions/upload-artifact@v4
         with:
-          name: packages
+          name: package-${{ matrix.arch }}
           path: "*.xpkg"
           if-no-files-found: error
           retention-days: 1
@@ -127,7 +130,7 @@ jobs:
   # pushes them as a multi-platform package. We only push the package it the
   # XPKG_ACCESS_ID and XPKG_TOKEN secrets were provided.
   push:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - build
     steps:
@@ -137,13 +140,13 @@ jobs:
       - name: Download Single-Platform Packages
         uses: actions/download-artifact@v4
         with:
-          name: packages
           path: .
+          merge-multiple: true
 
       - name: Setup the Crossplane CLI
         run: "curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh"
 
-      - name: Login to Dockerhub
+      - name: Login to Upbound
         uses: docker/login-action@v3
         if: env.XPKG_ACCESS_ID != ''
         with:
