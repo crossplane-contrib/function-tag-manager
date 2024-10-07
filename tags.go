@@ -107,3 +107,37 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 	}
 	return tu
 }
+
+// ResolveRemoveTag resolves the list of tag keys that will be removed
+func (f *Function) ResolveRemoveTags(in []v1beta1.RemoveTag, oxr *resource.Composite) []string {
+	tagKeys := make([]string, 0)
+	for _, at := range in {
+		switch t := at.GetType(); t {
+		case v1beta1.FromValue:
+			tagKeys = append(tagKeys, at.Keys...)
+		case v1beta1.FromCompositeFieldPath: // resolve fields
+			tags := make([]string, 0)
+			err := fieldpath.Pave(oxr.Resource.Object).GetValueInto(*at.FromFieldPath, &tags)
+			if err != nil {
+				f.log.Debug("Unable to read tags from Composite field: ", *at.FromFieldPath, err)
+			}
+			tagKeys = append(tagKeys, tags...)
+		}
+	}
+	return tagKeys
+}
+
+// RemoveTags removes tags from a desired composed resource based
+// on matching keys
+func RemoveTags(desired *resource.DesiredComposed, keys []string) error {
+	var desiredTags v1beta1.Tags
+	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider.tags", &desiredTags)
+	mergeTags := desiredTags.DeepCopy()
+	for _, key := range keys {
+		delete(mergeTags, key)
+
+	}
+	_ = mergo.Merge(&desiredTags, mergeTags, mergo.WithOverride)
+	err := desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
+	return err
+}
