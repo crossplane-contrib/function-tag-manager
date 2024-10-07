@@ -1,4 +1,4 @@
-# function-tags-manager
+# function-tag-manager
 
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
@@ -10,6 +10,7 @@ There several use cases for this Function:
 - Allowing external systems to set tags on Crossplane Managed Resources without conflict.
 - Adding Common Tags to Resources without having to update every resource in a Composition.
 - Allowing users the ability to add their own tags when Requesting new resources.
+- Removing tags that have been set earlier in the pipeline by other functions.
 
 ## Installing the Function
 
@@ -127,6 +128,20 @@ Tag keys to ignore can be defined in `FromValue` or set in the Composite/Claim u
 ```
 
 Another option for allowing external systems to manage tags is to use the [`initProvider`](https://docs.crossplane.io/latest/concepts/managed-resources/#initprovider) field of a Managed Resource.
+
+### RemoveTags
+
+The function can remove tags defined in the desired state by specifying
+`removeTags` and providing an array of keys to delete.
+
+```yaml
+  removeTags:
+  - type: FromValue
+    keys: 
+    - fromValue2
+  - type: FromCompositeFieldPath
+    fromFieldPath: spec.parameters.removeTags
+```
 
 ## Tag Policies
 

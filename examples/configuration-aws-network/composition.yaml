@@ -351,6 +351,13 @@ spec:
           policy: Retain
           keys:
           - ignoreRetain1
+        removeTags:
+        - type: FromValue
+          keys: 
+          - fromValue2 # delete tag defined earlier
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.removeTags
+
     - step: automatically-detect-ready-composed-resources
       functionRef:
         name: crossplane-contrib-function-auto-ready

@@ -26,10 +26,14 @@ type ManagedTags struct {
 	// +optional
 	AddTags []AddTag `json:"addTags,omitempty"`
 
-	// IgnoreTags is a map of tag keys to ignore if set on the
+	// IgnoreTags is a list of tag keys to ignore if set on the
 	// resource outside of Crossplane
 	// +optional
 	IgnoreTags IgnoreTags `json:"ignoreTags,omitempty"`
+
+	// IgnoreTags is a list of tag keys to remove from the resource
+	// +optional
+	RemoveTags RemoveTags `json:"removeTags,omitempty"`
 }
 
 type Tags map[string]string
@@ -78,6 +82,7 @@ type AddTag struct {
 	Policy TagManagerPolicy `json:"policy,omitempty"`
 }
 
+// IgnoreTag is a tag that is "ignored" by setting the desired value to the observed value.
 type IgnoreTag struct {
 	// Type determines where tag keys are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches keys from a field in
@@ -98,7 +103,28 @@ type IgnoreTag struct {
 	// +optional
 	Policy TagManagerPolicy `json:"policy,omitempty"`
 }
+
 type IgnoreTags []IgnoreTag
+
+// RemoveTag is a tag that removed from the desired state.
+type RemoveTag struct {
+	// Type determines where tag keys are sourced from. FromValue are inline
+	// to the composition. FromCompositeFieldPath fetches keys from a field in
+	// the composite resource
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	Type TagManagerType `json:"type"`
+
+	// FromFieldPath if type is FromCompositeFieldPath, get keys to remove
+	// from the field in the Composite (like spec.parameters.removeTags)
+	// +optional
+	FromFieldPath *string `json:"fromFieldPath,omitempty"`
+
+	// Keys are tag keys to ignore for the FromValue type
+	// +optional
+	Keys []string `json:"keys,omitempty"`
+}
+
+type RemoveTags []RemoveTag
 
 func (a *AddTag) GetType() TagManagerType {
 	if a == nil || a.Type == "" {
@@ -140,4 +166,11 @@ func GetKeys(i []IgnoreTag) []string {
 
 	}
 	return keys
+}
+
+func (a *RemoveTag) GetType() TagManagerType {
+	if a == nil || a.Type == "" {
+		return FromValue
+	}
+	return a.Type
 }

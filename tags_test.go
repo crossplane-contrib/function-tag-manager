@@ -358,3 +358,278 @@ func TestResolveIgnoreTags(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveRemoveTags(t *testing.T) {
+	fieldPath := "spec.removeTags"
+	type args struct {
+		in  []v1beta1.RemoveTag
+		oxr *resource.Composite
+	}
+	type want struct {
+		keys []string
+	}
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"EmptyInput": {
+			reason: "With no input should return an empty TagUpdater",
+			args: args{
+				in: []v1beta1.RemoveTag{},
+			},
+			want: want{
+				keys: []string{},
+			},
+		},
+		"SimpleFromValue": {
+			reason: "Keys should be populated correctly from simple values",
+			args: args{
+				in: []v1beta1.RemoveTag{
+					{Type: v1beta1.FromValue,
+						Keys: []string{
+							"key1",
+							"key2",
+						},
+					},
+					{Type: v1beta1.FromValue,
+						Keys: []string{
+							"key3",
+							"key4",
+						},
+					},
+				},
+			},
+			want: want{
+				keys: []string{"key1", "key2", "key3", "key4"},
+			},
+		},
+		"ValuesFromComposite": {
+			reason: "Test getting keys from XR field Path",
+			args: args{
+				in: []v1beta1.RemoveTag{
+					{Type: v1beta1.FromCompositeFieldPath,
+						FromFieldPath: &fieldPath,
+					},
+					{Type: v1beta1.FromValue,
+						Keys: []string{
+							"key1",
+							"key2",
+						},
+					},
+				},
+				oxr: &resource.Composite{
+					Resource: &composite.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "XR",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"removeTags": []string{
+								"fromXR1",
+								"fromXR2",
+							},
+						},
+					}}},
+				},
+			},
+			want: want{
+				keys: []string{"fromXR1", "fromXR2", "key1", "key2"},
+			},
+		},
+	}
+	f := &Function{log: logging.NewNopLogger()}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := f.ResolveRemoveTags(tc.args.in, tc.args.oxr)
+
+			if diff := cmp.Diff(tc.want.keys, got); diff != "" {
+				t.Errorf("%s\nfResolveRemoveTags(): -want err, +got err:\n%s", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestRemoveTags(t *testing.T) {
+	type args struct {
+		desired *resource.DesiredComposed
+		keys    []string
+	}
+	type want struct {
+		desired *resource.DesiredComposed
+		err     error
+	}
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"ResourceNoTags": {
+			reason: "A resource with no tags should be a no-op",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+							},
+						},
+					},
+					},
+					},
+				},
+				keys: []string{"key1", "key2"},
+			},
+			want: want{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+							},
+						},
+					},
+					}},
+				},
+				err: nil,
+			},
+		},
+		"RemoveAllTags": {
+			reason: "Remove all tags correctly",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+								"tags": map[string]any{
+									"key1": "value1",
+									"key2": "value2",
+								},
+							},
+						},
+					},
+					},
+					},
+				},
+				keys: []string{"key1", "key2"},
+			},
+			want: want{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+								"tags":   map[string]any{},
+							},
+						},
+					},
+					}},
+				},
+				err: nil,
+			},
+		},
+		"RemoveSomeTags": {
+			reason: "Remove all tags correctly",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+								"tags": map[string]any{
+									"key1": "value1",
+									"key2": "value2",
+									"key3": "keep",
+								},
+							},
+						},
+					},
+					},
+					},
+				},
+				keys: []string{"key1", "key2"},
+			},
+			want: want{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
+						"apiVersion": "example.crossplane.io/v1",
+						"kind":       "TagManager",
+						"metadata": map[string]any{
+							"name": "test-resource",
+							"labels": map[string]any{
+								IgnoreResourceLabel: "False",
+							},
+						},
+						"spec": map[string]any{
+							"forProvider": map[string]any{
+								"region": "eu-south",
+								"tags": map[string]any{
+									"key3": "keep",
+								},
+							},
+						},
+					},
+					}},
+				},
+				err: nil,
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := RemoveTags(tc.args.desired, tc.args.keys)
+
+			if diff := cmp.Diff(tc.want.desired, tc.args.desired); diff != "" {
+				t.Errorf("%s\nfAddTags(): -want err, +got err:\n%s", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.err, err, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
+			}
+		})
+	}
+}

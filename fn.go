@@ -92,6 +92,14 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 				}
 			}
 		}
+		removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr)
+		// Remove tags
+		if len(removeTags) > 0 {
+			err := RemoveTags(desired, removeTags)
+			if err != nil {
+				f.log.Debug("error removing tags", string(name), err.Error())
+			}
+		}
 	}
 
 	if err := response.SetDesiredComposedResources(rsp, desiredComposed); err != nil {

@@ -65,9 +65,11 @@ spec:
             type: string
           ignoreTags:
             description: |-
-              IgnoreTags is a map of tag keys to ignore if set on the
+              IgnoreTags is a list of tag keys to ignore if set on the
               resource outside of Crossplane
             items:
+              description: IgnoreTag is a tag that is "ignored" by setting the desired
+                value to the observed value.
               properties:
                 fromFieldPath:
                   description: |-
@@ -88,7 +90,7 @@ spec:
                   type: string
                 type:
                   description: |-
-                    Type determines where tag keysare sourced from. FromValue are inline
+                    Type determines where tag keys are sourced from. FromValue are inline
                     to the composition. FromCompositeFieldPath fetches keys from a field in
                     the composite resource
                   enum:
@@ -109,6 +111,34 @@ spec:
             type: string
           metadata:
             type: object
+          removeTags:
+            description: IgnoreTags is a list of tag keys to remove from the resource
+            items:
+              description: RemoveTag is a tag that removed from the desired state.
+              properties:
+                fromFieldPath:
+                  description: |-
+                    FromFieldPath if type is FromCompositeFieldPath, get keys to remove
+                    from the field in the Composite (like spec.parameters.removeTags)
+                  type: string
+                keys:
+                  description: Keys are tag keys to ignore for the FromValue type
+                  items:
+                    type: string
+                  type: array
+                type:
+                  description: |-
+                    Type determines where tag keys are sourced from. FromValue are inline
+                    to the composition. FromCompositeFieldPath fetches keys from a field in
+                    the composite resource
+                  enum:
+                  - FromCompositeFieldPath
+                  - FromValue
+                  type: string
+              required:
+              - type
+              type: object
+            type: array
         type: object
     served: true
     storage: true
