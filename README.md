@@ -128,6 +128,20 @@ Tag keys to ignore can be defined in `FromValue` or set in the Composite/Claim u
 
 Another option for allowing external systems to manage tags is to use the [`initProvider`](https://docs.crossplane.io/latest/concepts/managed-resources/#initprovider) field of a Managed Resource.
 
+### RemoveTags
+
+The function can remove tags defined in the desired state by specifying
+`deleteTags` and providing an array of keys to delete.
+
+```yaml
+  removeTags:
+  - type: FromValue
+    keys: 
+    - fromValue2
+  - type: FromCompositeFieldPath
+    fromFieldPath: spec.parameters.removeTags
+```
+
 ## Tag Policies
 
 When Merging tags, a `Policy` can be set:
