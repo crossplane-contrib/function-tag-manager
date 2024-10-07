@@ -130,14 +130,17 @@ func (f *Function) ResolveRemoveTags(in []v1beta1.RemoveTag, oxr *resource.Compo
 // RemoveTags removes tags from a desired composed resource based
 // on matching keys
 func RemoveTags(desired *resource.DesiredComposed, keys []string) error {
+	if len(keys) == 0 {
+		return nil
+	}
 	var desiredTags v1beta1.Tags
 	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider.tags", &desiredTags)
-	mergeTags := desiredTags.DeepCopy()
+	numTags := len(desiredTags)
 	for _, key := range keys {
-		delete(mergeTags, key)
-
+		delete(desiredTags, key)
 	}
-	_ = mergo.Merge(&desiredTags, mergeTags, mergo.WithOverride)
-	err := desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
-	return err
+	if numTags > 0 {
+		return desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
+	}
+	return nil
 }
