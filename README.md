@@ -1,6 +1,3 @@
-**This repo has moved to Crossplane-Contrib: <https://github.com/crossplane-contrib/function-tag-manager>.**
-
-
 # function-tag-manager
 
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
@@ -24,9 +21,9 @@ will move to crossplane-contrib once initial testing is successful.
 apiVersion: pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: borrelli-org-function-tag-manager
+  name: crossplane-contrib-function-tag-manager
 spec:
-  package: xpkg.upbound.io/borrelli-org/function-tag-manager:v0.2.0
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.0
 ```
 
 ## Using this Function in a Composition
@@ -62,14 +59,9 @@ created Desired State. Below is an example pipeline step:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.ignoreTagKeysReplace
       policy: Replace
-      keys:
-      - ignoreReplace1
-      - ignoreReplace2
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.ignoreTagKeyRetain
       policy: Retain
-      keys:
-      - ignoreRetain1
 ```
 
 ## Function Inputs
@@ -110,24 +102,18 @@ the values of the Observed tags for each key defined.
 Tag keys to ignore can be defined in `FromValue` or set in the Composite/Claim using `FromCompositeFieldPath`.
 
 ```yaml
- ignoreTags:
-    - type: FromValue
-      policy: Replace
-      keys:
-      - external-tag-1
-      - external-tag-2
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.ignoreTagKeysReplace
-      policy: Replace
-      keys:
-      - ignoreReplace1
-      - ignoreReplace2
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.ignoreTagKeysRetain
-      policy: Retain
-      keys:
-      - ignoreRetain1
-
+ignoreTags:
+- type: FromValue
+  policy: Replace
+  keys:
+  - external-tag-1
+  - external-tag-2
+- type: FromCompositeFieldPath
+  fromFieldPath: spec.parameters.ignoreTagKeysReplace
+  policy: Replace
+- type: FromCompositeFieldPath
+  fromFieldPath: spec.parameters.ignoreTagKeysRetain
+  policy: Retain
 ```
 
 Another option for allowing external systems to manage tags is to use the [`initProvider`](https://docs.crossplane.io/latest/concepts/managed-resources/#initprovider) field of a Managed Resource.
@@ -222,5 +208,5 @@ crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o f
 I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
 
 ```shell
-up xpkg push xpkg.upbound.io/borrelli-org/function-tag-manager:v0.1.0 -f function-tag-manager.xpkg
+up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.0 -f function-tag-manager.xpkg
 ```
