@@ -1,3 +1,6 @@
+**This repo has moved to Crossplane-Contrib: <https://github.com/crossplane-contrib/function-tag-manager>.**
+
+
 # function-tag-manager
 
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
