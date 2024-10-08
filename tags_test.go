@@ -3,13 +3,13 @@ package main
 import (
 	"testing"
 
+	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
 	"github.com/crossplane/function-sdk-go/resource/composite"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/stevendborrelli/function-tag-manager/input/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 

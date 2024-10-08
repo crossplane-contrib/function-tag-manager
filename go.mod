@@ -1,4 +1,4 @@
-module github.com/stevendborrelli/function-tag-manager
+module github.com/crossplane-contrib/function-tag-manager
 
 go 1.23
 
