@@ -12,8 +12,8 @@ import (
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
 
+	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
-	"github.com/stevendborrelli/function-tag-manager/input/v1beta1"
 )
 
 // Function returns whatever response you ask it to.

@@ -343,18 +343,13 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.ignoreTagKeysReplace
           policy: Replace
-          keys:
-          - ignoreReplace1
-          - ignoreReplace2
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.ignoreTagKeysRetain
           policy: Retain
-          keys:
-          - ignoreRetain1
         removeTags:
         - type: FromValue
           keys: 
-          - fromValue2 # delete tag defined earlier
+          - fromValue2 # delete tag defined earlier in the pipeline
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.removeTags
 
