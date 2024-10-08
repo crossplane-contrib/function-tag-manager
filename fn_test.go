@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
@@ -14,10 +13,11 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
 
 func TestRunFunction(t *testing.T) {
-
 	type args struct {
 		ctx context.Context
 		req *fnv1.RunFunctionRequest
@@ -197,17 +197,19 @@ func TestIgnoreResource(t *testing.T) {
 			reason: "A resource with Label set to true returns true",
 			args: args{
 				res: &resource.DesiredComposed{
-					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
-						Object: map[string]any{
-							"apiVersion": "example.crossplane.io/v1",
-							"kind":       "TagManager",
-							"metadata": map[string]any{
-								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "True",
+					Resource: &composed.Unstructured{
+						Unstructured: unstructured.Unstructured{
+							Object: map[string]any{
+								"apiVersion": "example.crossplane.io/v1",
+								"kind":       "TagManager",
+								"metadata": map[string]any{
+									"name": "test-resource",
+									"labels": map[string]any{
+										IgnoreResourceLabel: "True",
+									},
 								},
 							},
-						}},
+						},
 					},
 				},
 			},
@@ -217,16 +219,17 @@ func TestIgnoreResource(t *testing.T) {
 			reason: "Label value should support mixed case",
 			args: args{
 				res: &resource.DesiredComposed{
-					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
-						"apiVersion": "example.crossplane.io/v1",
-						"kind":       "TagManager",
-						"metadata": map[string]any{
-							"name": "test-resource",
-							"labels": map[string]any{
-								IgnoreResourceLabel: "trUe",
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"labels": map[string]any{
+									IgnoreResourceLabel: "trUe",
+								},
 							},
 						},
-					},
 					}},
 				},
 			},
@@ -236,16 +239,17 @@ func TestIgnoreResource(t *testing.T) {
 			reason: "A resource with label set to not true returns false",
 			args: args{
 				res: &resource.DesiredComposed{
-					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{Object: map[string]any{
-						"apiVersion": "example.crossplane.io/v1",
-						"kind":       "TagManager",
-						"metadata": map[string]any{
-							"name": "test-resource",
-							"labels": map[string]any{
-								IgnoreResourceLabel: "False",
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"labels": map[string]any{
+									IgnoreResourceLabel: "False",
+								},
 							},
 						},
-					},
 					}},
 				},
 			},

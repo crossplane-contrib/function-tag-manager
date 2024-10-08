@@ -4,27 +4,25 @@ import (
 	"context"
 	"strings"
 
-	"github.com/crossplane/crossplane-runtime/pkg/errors"
-	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-
+	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
+	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
 
-	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
-	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/errors"
+	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
 
 // Function returns whatever response you ask it to.
-// not working
 type Function struct {
 	fnv1.FunctionRunnerServiceServer
 
 	log logging.Logger
 }
 
-// RunFunction runs the Function
+// RunFunction runs the Function.
 func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
 	f.log.Info("Running Function", "tag-manager", req.GetMeta().GetTag())
 
@@ -66,13 +64,14 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
+	resourceFilter := NewAWSResourceFilter()
 	for name, desired := range desiredComposed {
 		desired.Resource.GetObjectKind()
 		if IgnoreResource(desired) {
 			f.log.Debug("skipping resource due to label", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
-		if !SupportedManagedResource(desired, ManagedResourceFilter) {
+		if !SupportedManagedResource(desired, resourceFilter) {
 			f.log.Debug("skipping resource that doesn't support tags", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
@@ -112,7 +111,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	return rsp, nil
 }
 
-// IgnoreResource whether this resource has a label set to ignore
+// IgnoreResource whether this resource has a label set to ignore.
 func IgnoreResource(dc *resource.DesiredComposed) bool {
 	if dc == nil {
 		return true
@@ -121,11 +120,11 @@ func IgnoreResource(dc *resource.DesiredComposed) bool {
 	err := fieldpath.Pave(dc.Resource.Object).GetValueInto("metadata.labels", &labels)
 	if err != nil {
 		return false
-	} else {
-		val, ok := labels[IgnoreResourceLabel].(string)
-		if ok && strings.ToLower(val) == "true" {
-			return true
-		}
 	}
+	val, ok := labels[IgnoreResourceLabel].(string)
+	if ok && strings.EqualFold(val, "true") {
+		return true
+	}
+
 	return false
 }
