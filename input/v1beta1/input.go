@@ -11,10 +11,7 @@ import (
 // This isn't a custom resource, in the sense that we never install its CRD.
 // It is a KRM-like object, so we generate a CRD to describe its schema.
 
-// TODO: Add your input type here! It doesn't need to be called 'Input', you can
-// rename it to anything you like.
-
-// Input can be used to provide input to this Function.
+// ManagedTags can be used to provide input to this Function.
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 // +kubebuilder:resource:categories=crossplane
@@ -22,7 +19,7 @@ type ManagedTags struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// AddTags are fields that will be added to every composed resource
+	// AddTags are fields that will be added to every composed resource.
 	// +optional
 	AddTags []AddTag `json:"addTags,omitempty"`
 
@@ -31,33 +28,36 @@ type ManagedTags struct {
 	// +optional
 	IgnoreTags IgnoreTags `json:"ignoreTags,omitempty"`
 
-	// IgnoreTags is a list of tag keys to remove from the resource
+	// IgnoreTags is a list of tag keys to remove from the resource.
 	// +optional
 	RemoveTags RemoveTags `json:"removeTags,omitempty"`
 }
 
+// Tags contains a map tags.
 type Tags map[string]string
 
-// TagManagerType configures where we get tags from
+// TagManagerType configures the source of the input tags.
 type TagManagerType string
 
 const (
+	// FromCompositeFieldPath instructs the function to get tag settings from the Composite fieldpath.
 	FromCompositeFieldPath TagManagerType = "FromCompositeFieldPath"
-	FromValue              TagManagerType = "FromValue"
+	// FromValue are static values set in the function's input.
+	FromValue TagManagerType = "FromValue"
 )
 
-// TagManagerPolicy sets what happens when the tag exists in the resource
+// TagManagerPolicy sets what happens when the tag exists in the resource.
 type TagManagerPolicy string
 
 const (
-	// ExistingTagPolicyReplace replaces the desired value of a tag if the observed tag differs
+	// ExistingTagPolicyReplace replaces the desired value of a tag if the observed tag differs.
 	ExistingTagPolicyReplace TagManagerPolicy = "Replace"
-	// ExistingTagPolicyReplace retains the desired value of a tag if the observed tag differs
+	// ExistingTagPolicyRetain retains the desired value of a tag if the observed tag differs.
 	ExistingTagPolicyRetain TagManagerPolicy = "Retain"
 )
 
+// AddTag defines tags that should be added to every resource.
 type AddTag struct {
-
 	// Type determines where tags are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches tags from a field in
 	// the composite resource
@@ -104,6 +104,7 @@ type IgnoreTag struct {
 	Policy TagManagerPolicy `json:"policy,omitempty"`
 }
 
+// IgnoreTags is a list of IgnoreTag settings.
 type IgnoreTags []IgnoreTag
 
 // RemoveTag is a tag that removed from the desired state.
@@ -124,8 +125,10 @@ type RemoveTag struct {
 	Keys []string `json:"keys,omitempty"`
 }
 
+// RemoveTags is an array of RemoveTag settings.
 type RemoveTags []RemoveTag
 
+// GetType returns the type of the managed tag.
 func (a *AddTag) GetType() TagManagerType {
 	if a == nil || a.Type == "" {
 		return FromValue
@@ -133,6 +136,7 @@ func (a *AddTag) GetType() TagManagerType {
 	return a.Type
 }
 
+// GetPolicy returns the add tag policy.
 func (a *AddTag) GetPolicy() TagManagerPolicy {
 	if a == nil || a.Type == "" {
 		return ExistingTagPolicyReplace
@@ -140,6 +144,7 @@ func (a *AddTag) GetPolicy() TagManagerPolicy {
 	return a.Policy
 }
 
+// GetType returns the type of the managed tag.
 func (i *IgnoreTag) GetType() TagManagerType {
 	if i == nil || i.Type == "" {
 		return FromValue
@@ -147,27 +152,15 @@ func (i *IgnoreTag) GetType() TagManagerType {
 	return i.Type
 }
 
-func (a *IgnoreTag) GetPolicy() TagManagerPolicy {
-	if a == nil || a.Type == "" {
+// GetPolicy returns the tag policy.
+func (i *IgnoreTag) GetPolicy() TagManagerPolicy {
+	if i == nil || i.Type == "" {
 		return ExistingTagPolicyReplace
 	}
-	return a.Policy
+	return i.Policy
 }
 
-func GetKeys(i []IgnoreTag) []string {
-	var keys []string
-	for _, tag := range i {
-		switch t := tag.GetType(); t {
-		case FromValue:
-			if tag.Keys != nil {
-				keys = append(keys, tag.Keys...)
-			}
-		}
-
-	}
-	return keys
-}
-
+// GetType returns the type of the managed tag.
 func (a *RemoveTag) GetType() TagManagerType {
 	if a == nil || a.Type == "" {
 		return FromValue
