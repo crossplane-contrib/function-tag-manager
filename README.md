@@ -199,6 +199,10 @@ To build the function, run:
 docker build . --tag=function-tag-manager
 ```
 
+Please note that this command builds an image for your local computer architecture.
+In general, Crossplane projects build images for linux/amd64 and linux/arm64.
+See the Github [ci.yaml](.github/workflows/ci.yml) workflow for an example.
+
 Next create the Crossplane Package, embedding the function we just built:
 
 ```shell
