@@ -318,7 +318,7 @@ spec:
               {{- end }}
     - step: manage-tags
       functionRef:
-        name: borrelli-org-function-tag-manager
+        name: crossplane-contrib-function-tag-manager
       input:
         apiVersion: tag-manger.fn.crossplane.io/v1beta1
         kind: ManagedTags

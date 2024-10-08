@@ -14,8 +14,8 @@ There several use cases for this Function:
 
 ## Installing the Function
 
-Please note, during early testing this function is located at my personal repository. It
-will move to crossplane-contrib once initial testing is successful.
+The function is installed as a Crossplane Package. Apply the following
+YAML manifest to your Crossplane cluster.
 
 ```yaml
 apiVersion: pkg.crossplane.io/v1beta1
@@ -34,7 +34,7 @@ created Desired State. Below is an example pipeline step:
 ```yaml
 - step: manage-tags
   functionRef:
-    name: borrelli-org-function-tag-manager
+    name: crossplane-contrib-function-tag-manager
   input:
     apiVersion: tag-manger.fn.crossplane.io/v1beta1
     kind: ManagedTags
