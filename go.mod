@@ -5,14 +5,14 @@ go 1.23
 toolchain go1.23.2
 
 require (
-	dario.cat/mergo v1.0.0
-	github.com/alecthomas/kong v0.8.1
+	dario.cat/mergo v1.0.1
+	github.com/alecthomas/kong v1.2.1
 	github.com/crossplane/crossplane-runtime v1.17.0
 	github.com/crossplane/function-sdk-go v0.3.0
 	github.com/google/go-cmp v0.6.0
-	google.golang.org/protobuf v1.34.3-0.20240816073751-94ecbc261689
+	google.golang.org/protobuf v1.35.1
 	k8s.io/apimachinery v0.31.1
-	sigs.k8s.io/controller-tools v0.14.0
+	sigs.k8s.io/controller-tools v0.16.3
 )
 
 require (
@@ -63,9 +63,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.30.0 // indirect
-	k8s.io/apiextensions-apiserver v0.30.0 // indirect
-	k8s.io/client-go v0.30.0 // indirect
+	k8s.io/api v0.31.0 // indirect
+	k8s.io/apiextensions-apiserver v0.31.0 // indirect
+	k8s.io/client-go v0.31.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3 // indirect
