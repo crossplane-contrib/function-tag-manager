@@ -2,5 +2,17 @@
 apiVersion: meta.pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: function-template-go
+  name: function-tag-manager
+  meta.crossplane.io/maintainer: Crossplane Maintainers <info@crossplane.io>
+  meta.crossplane.io/source: github.com/crossplane-contrib/function-tag-manager
+  meta.crossplane.io/license: Apache-2.0
+  meta.crossplane.io/description: A Function that Manages Resource Tags.
+  meta.crossplane.io/readme: |
+      This Composition function manages tags for cloud resources, allowing platform
+      operators to add additional tags, remove tags, and have Crossplane
+      ignore tags that are set by outside systems.
+      
+      Currently AWS is supported. The function will only tag AWS resources that support
+      tags. See the [README](https://github.com/crossplane-contrib/function-tag-manager)
+      for examples and documentation.
 spec: {}
