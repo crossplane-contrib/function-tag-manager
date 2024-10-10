@@ -6,7 +6,7 @@ metadata:
   meta.crossplane.io/maintainer: Crossplane Maintainers <info@crossplane.io>
   meta.crossplane.io/source: github.com/crossplane-contrib/function-tag-manager
   meta.crossplane.io/license: Apache-2.0
-  meta.crossplane.io/description: A Function that Manages resources tags.
+  meta.crossplane.io/description: A Function that Manages Resource Tags.
   meta.crossplane.io/readme: |
       This Composition function manages tags for cloud resources, allowing platform
       operators to add additional tags, remove tags, and have Crossplane
