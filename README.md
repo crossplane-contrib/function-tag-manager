@@ -23,7 +23,7 @@ kind: Function
 metadata:
   name: crossplane-contrib-function-tag-manager
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.2
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.3
 ```
 
 ## Using this Function in a Composition
@@ -212,5 +212,5 @@ crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o f
 I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
 
 ```shell
-up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.2 -f function-tag-manager.xpkg
+up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.3 -f function-tag-manager.xpkg
 ```
