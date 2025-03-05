@@ -142,6 +142,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: .
+          pattern: "*.xpkg"
           merge-multiple: true
 
       - name: Setup the Crossplane CLI
