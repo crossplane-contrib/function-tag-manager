@@ -29,7 +29,6 @@ func (c *CLI) Run() error {
 		function.MTLSCertificates(c.TLSCertsDir),
 		function.Insecure(c.Insecure),
 		function.MaxRecvMessageSize(c.MaxRecvMessageSize*1024*1024))
-
 }
 
 func main() {
