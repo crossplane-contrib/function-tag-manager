@@ -5,7 +5,7 @@ import (
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
 	"github.com/crossplane/function-sdk-go/resource"
 
-	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 )
 
 // IgnoreCrossplaneTags tags added by Crossplane automatically
