@@ -17,7 +17,7 @@ import (
 // +kubebuilder:resource:categories=crossplane
 type ManagedTags struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata"`
 
 	// AddTags are fields that will be added to every composed resource.
 	// +optional
@@ -133,6 +133,7 @@ func (a *AddTag) GetType() TagManagerType {
 	if a == nil || a.Type == "" {
 		return FromValue
 	}
+
 	return a.Type
 }
 
@@ -141,6 +142,7 @@ func (a *AddTag) GetPolicy() TagManagerPolicy {
 	if a == nil || a.Type == "" {
 		return ExistingTagPolicyReplace
 	}
+
 	return a.Policy
 }
 
@@ -149,6 +151,7 @@ func (i *IgnoreTag) GetType() TagManagerType {
 	if i == nil || i.Type == "" {
 		return FromValue
 	}
+
 	return i.Type
 }
 
@@ -157,6 +160,7 @@ func (i *IgnoreTag) GetPolicy() TagManagerPolicy {
 	if i == nil || i.Type == "" {
 		return ExistingTagPolicyReplace
 	}
+
 	return i.Policy
 }
 
@@ -165,5 +169,6 @@ func (a *RemoveTag) GetType() TagManagerType {
 	if a == nil || a.Type == "" {
 		return FromValue
 	}
+
 	return a.Type
 }
