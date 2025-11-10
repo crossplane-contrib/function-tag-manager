@@ -29,7 +29,9 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	rsp := response.To(req, response.DefaultTTL)
 
 	in := &v1beta1.ManagedTags{}
-	if err := request.GetInput(req, in); err != nil {
+
+	err := request.GetInput(req, in)
+	if err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get Function input from %T", req))
 		return rsp, nil
 	}
@@ -65,12 +67,15 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 
 	resourceFilter := NewAWSResourceFilter()
+
 	for name, desired := range desiredComposed {
 		desired.Resource.GetObjectKind()
+
 		if IgnoreResource(desired) {
 			f.log.Debug("skipping resource due to label", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
+
 		if !SupportedManagedResource(desired, resourceFilter) {
 			f.log.Debug("skipping resource that doesn't support tags", string(name), desired.Resource.GroupVersionKind().String())
 			continue
@@ -91,6 +96,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 				}
 			}
 		}
+
 		removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr)
 		// Remove tags
 		if len(removeTags) > 0 {
@@ -101,7 +107,8 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		}
 	}
 
-	if err := response.SetDesiredComposedResources(rsp, desiredComposed); err != nil {
+	err = response.SetDesiredComposedResources(rsp, desiredComposed)
+	if err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot set desired composed resources in %T", rsp))
 		return rsp, nil
 	}
@@ -116,11 +123,14 @@ func IgnoreResource(dc *resource.DesiredComposed) bool {
 	if dc == nil {
 		return true
 	}
+
 	var labels map[string]any
+
 	err := fieldpath.Pave(dc.Resource.Object).GetValueInto("metadata.labels", &labels)
 	if err != nil {
 		return false
 	}
+
 	val, ok := labels[IgnoreResourceLabel].(string)
 	if ok && strings.EqualFold(val, "true") {
 		return true

@@ -10,10 +10,12 @@ import (
 
 func TestSupportedManagedResource(t *testing.T) {
 	AWSResourceFilter := NewAWSResourceFilter()
+
 	type args struct {
 		desired *resource.DesiredComposed
 		filter  ResourceFilter
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args

@@ -22,6 +22,7 @@ func TestRunFunction(t *testing.T) {
 		ctx context.Context
 		req *fnv1.RunFunctionRequest
 	}
+
 	type want struct {
 		rsp *fnv1.RunFunctionResponse
 		err error

@@ -17,13 +17,16 @@ import (
 func TestResolveAddTags(t *testing.T) {
 	fieldPath := "spec.additionalTags"
 	optionalFieldPath := "spec.optionalTags"
+
 	type args struct {
 		in  []v1beta1.AddTag
 		oxr *resource.Composite
 	}
+
 	type want struct {
 		tu TagUpdater
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args
@@ -125,6 +128,7 @@ func TestResolveAddTags(t *testing.T) {
 		},
 	}
 	f := &Function{log: logging.NewNopLogger()}
+
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := f.ResolveAddTags(tc.args.in, tc.args.oxr)
@@ -141,10 +145,12 @@ func TestAddTags(t *testing.T) {
 		desired *resource.DesiredComposed
 		tu      TagUpdater
 	}
+
 	type want struct {
 		desired *resource.DesiredComposed
 		err     error
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args
@@ -209,6 +215,7 @@ func TestAddTags(t *testing.T) {
 			if diff := cmp.Diff(tc.want.desired, tc.args.desired); diff != "" {
 				t.Errorf("%s\nfAddTags(): -want err, +got err:\n%s", tc.reason, diff)
 			}
+
 			if diff := cmp.Diff(tc.want.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
 			}
@@ -219,14 +226,17 @@ func TestAddTags(t *testing.T) {
 func TestResolveIgnoreTags(t *testing.T) {
 	ignoreReplacePath := "spec.ignoreTagsReplace"
 	ignoreRetainPath := "spec.ignoreTagsRetain"
+
 	type args struct {
 		in       []v1beta1.IgnoreTag
 		oxr      *resource.Composite
 		observed *resource.ObservedComposed
 	}
+
 	type want struct {
 		tu *TagUpdater
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args
@@ -357,6 +367,7 @@ func TestResolveIgnoreTags(t *testing.T) {
 	}
 
 	f := &Function{log: logging.NewNopLogger()}
+
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			tu := f.ResolveIgnoreTags(tc.args.in, tc.args.oxr, tc.args.observed)
@@ -370,13 +381,16 @@ func TestResolveIgnoreTags(t *testing.T) {
 
 func TestResolveRemoveTags(t *testing.T) {
 	fieldPath := "spec.removeTags"
+
 	type args struct {
 		in  []v1beta1.RemoveTag
 		oxr *resource.Composite
 	}
+
 	type want struct {
 		keys []string
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args
@@ -456,6 +470,7 @@ func TestResolveRemoveTags(t *testing.T) {
 		},
 	}
 	f := &Function{log: logging.NewNopLogger()}
+
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := f.ResolveRemoveTags(tc.args.in, tc.args.oxr)
@@ -472,10 +487,12 @@ func TestRemoveTags(t *testing.T) {
 		desired *resource.DesiredComposed
 		keys    []string
 	}
+
 	type want struct {
 		desired *resource.DesiredComposed
 		err     error
 	}
+
 	cases := map[string]struct {
 		reason string
 		args   args
@@ -649,6 +666,7 @@ func TestRemoveTags(t *testing.T) {
 			if diff := cmp.Diff(tc.want.desired, tc.args.desired); diff != "" {
 				t.Errorf("%s\nfAddTags(): -want err, +got err:\n%s", tc.reason, diff)
 			}
+
 			if diff := cmp.Diff(tc.want.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
 			}

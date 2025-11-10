@@ -10,6 +10,7 @@ type ResourceFilter map[string]bool
 // SupportedManagedResource returns true if a resource supports tags.
 func SupportedManagedResource(desired *resource.DesiredComposed, filter ResourceFilter) bool {
 	gvk := desired.Resource.GroupVersionKind()
+
 	resource := gvk.Group + "/" + gvk.Kind
 	if val, ok := filter[resource]; ok {
 		return val
