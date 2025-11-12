@@ -3,17 +3,18 @@ package main
 import (
 	"testing"
 
+	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func TestSupportedManagedResource(t *testing.T) {
-	AWSResourceFilter := NewAWSResourceFilter()
+	AWSResourceFilter := filters.NewResourceFilter()
 
 	type args struct {
 		desired *resource.DesiredComposed
-		filter  ResourceFilter
+		filter  filters.ResourceFilter
 	}
 
 	cases := map[string]struct {
@@ -131,9 +132,78 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
+				filter: filters.NewResourceFilter(),
+			},
+			want: false,
+		},
+		"NamespacedGroupInclude": {
+			reason: "Include resources with .m namespaced groups that support tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "acm.aws.m.upbound.io/v1beta2",
+							"kind":       "Certificate",
+							"metadata": map[string]any{
+								"name": "test-certificate",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"domainName": "example.com",
+								},
+							},
+						},
+					}},
+				},
+				filter: AWSResourceFilter,
+			},
+			want: true,
+		},
+		"NamespacedGroupExclude": {
+			reason: "Exclude resources with .m namespaced groups that don't support tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "acmpca.aws.m.upbound.io/v1beta1",
+							"kind":       "Certificate",
+							"metadata": map[string]any{
+								"name": "test-pca-certificate",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"certificateAuthorityArn": "arn:aws:acm-pca:us-west-2:123456789012:certificate-authority/12345678-1234-1234-1234-123456789012",
+								},
+							},
+						},
+					}},
+				},
 				filter: AWSResourceFilter,
 			},
 			want: false,
+		},
+		"NamespacedGroupAmplifyApp": {
+			reason: "Include Amplify App with .m namespaced group that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "amplify.aws.m.upbound.io/v1beta2",
+							"kind":       "App",
+							"metadata": map[string]any{
+								"name": "test-amplify-app",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"name": "my-app",
+								},
+							},
+						},
+					}},
+				},
+				filter: AWSResourceFilter,
+			},
+			want: true,
 		},
 	}
 	for name, tt := range cases {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/request"
@@ -66,7 +67,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	resourceFilter := NewAWSResourceFilter()
+	resourceFilter := filters.NewResourceFilter()
 
 	for name, desired := range desiredComposed {
 		desired.Resource.GetObjectKind()

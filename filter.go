@@ -1,14 +1,12 @@
 package main
 
 import (
+	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane/function-sdk-go/resource"
 )
 
-// ResourceFilter is a map indicating whether a resource supports tags.
-type ResourceFilter map[string]bool
-
 // SupportedManagedResource returns true if a resource supports tags.
-func SupportedManagedResource(desired *resource.DesiredComposed, filter ResourceFilter) bool {
+func SupportedManagedResource(desired *resource.DesiredComposed, filter filters.ResourceFilter) bool {
 	gvk := desired.Resource.GroupVersionKind()
 
 	resource := gvk.Group + "/" + gvk.Kind
