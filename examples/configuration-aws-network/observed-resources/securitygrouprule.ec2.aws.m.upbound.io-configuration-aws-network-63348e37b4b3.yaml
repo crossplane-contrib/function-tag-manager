@@ -1,75 +1,77 @@
-apiVersion: ec2.aws.upbound.io/v1beta1
+apiVersion: ec2.aws.m.upbound.io/v1beta1
 kind: SecurityGroupRule
 metadata:
   annotations:
-    crossplane.io/composition-resource-name: sgrp
-    crossplane.io/external-create-pending: "2024-09-26T15:53:03Z"
-    crossplane.io/external-create-succeeded: "2024-09-26T15:53:03Z"
-    crossplane.io/external-name: sgrule-95637850
-  creationTimestamp: "2024-09-26T15:49:00Z"
+    crossplane.io/composition-resource-name: sgrm
+    crossplane.io/external-create-pending: "2025-11-12T14:08:17Z"
+    crossplane.io/external-create-succeeded: "2025-11-12T14:08:17Z"
+    crossplane.io/external-name: sgrule-3159882075
+  creationTimestamp: "2025-11-12T14:07:14Z"
   finalizers:
   - finalizer.managedresource.crossplane.io
   generateName: configuration-aws-network-
   generation: 3
   labels:
-    crossplane.io/claim-name: ""
-    crossplane.io/claim-namespace: ""
     crossplane.io/composite: configuration-aws-network
     networks.aws.platform.upbound.io/network-id: configuration-aws-network
-  name: configuration-aws-network-n2t84
+  name: configuration-aws-network-63348e37b4b3
+  namespace: default
   ownerReferences:
   - apiVersion: aws.platform.upbound.io/v1alpha1
     blockOwnerDeletion: true
     controller: true
-    kind: XNetwork
+    kind: Network
     name: configuration-aws-network
-    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
-  resourceVersion: "751295"
-  uid: 02c4b3b0-73c9-420c-83d8-364a33a942b6
+    uid: 283a30f0-fd42-4766-97a8-ac28d501d056
+  resourceVersion: "626309"
+  uid: 41054ee2-ae4e-4391-8593-6dd80b75b37b
 spec:
-  deletionPolicy: Delete
   forProvider:
     cidrBlocks:
     - 0.0.0.0/0
     description: Everywhere
-    fromPort: 5432
+    fromPort: 3306
     protocol: tcp
     region: us-west-2
-    securityGroupId: sg-0f048301b762a1c7c
+    securityGroupId: sg-01f80f38de3da15fe
     securityGroupIdRef:
-      name: configuration-aws-network-pbbvn
+      name: configuration-aws-network-8d638d44a408
+      namespace: default
     securityGroupIdSelector:
       matchControllerRef: true
-    toPort: 5432
+    toPort: 3306
     type: ingress
   initProvider: {}
   managementPolicies:
   - '*'
   providerConfigRef:
+    kind: ProviderConfig
     name: default
 status:
   atProvider:
     cidrBlocks:
     - 0.0.0.0/0
     description: Everywhere
-    fromPort: 5432
-    id: sgrule-95637850
+    fromPort: 3306
+    id: sgrule-3159882075
     protocol: tcp
-    securityGroupId: sg-0f048301b762a1c7c
-    securityGroupRuleId: sgr-0c395bb6d22715315
+    region: us-west-2
+    securityGroupId: sg-01f80f38de3da15fe
+    securityGroupRuleId: sgr-02913362a62108a31
     self: false
-    toPort: 5432
+    toPort: 3306
     type: ingress
   conditions:
-  - lastTransitionTime: "2024-09-26T15:53:03Z"
+  - lastTransitionTime: "2025-11-12T14:18:49Z"
+    observedGeneration: 3
     reason: ReconcileSuccess
     status: "True"
     type: Synced
-  - lastTransitionTime: "2024-09-26T15:53:10Z"
+  - lastTransitionTime: "2025-11-12T14:08:26Z"
     reason: Available
     status: "True"
     type: Ready
-  - lastTransitionTime: "2024-09-26T15:53:06Z"
+  - lastTransitionTime: "2025-11-12T14:08:19Z"
     reason: Success
     status: "True"
     type: LastAsyncOperation

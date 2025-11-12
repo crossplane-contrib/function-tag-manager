@@ -1,35 +1,33 @@
-apiVersion: ec2.aws.upbound.io/v1beta1
+apiVersion: ec2.aws.m.upbound.io/v1beta1
 kind: Subnet
 metadata:
   annotations:
     crossplane.io/composition-resource-name: subnet-us-west-2a-public
-    crossplane.io/external-create-pending: "2024-09-26T15:52:01Z"
-    crossplane.io/external-create-succeeded: "2024-09-26T15:52:01Z"
-    crossplane.io/external-name: subnet-010a73248007deacf
-  creationTimestamp: "2024-09-26T15:49:00Z"
+    crossplane.io/external-create-pending: "2025-11-12T14:07:43Z"
+    crossplane.io/external-create-succeeded: "2025-11-12T14:07:43Z"
+    crossplane.io/external-name: subnet-07943c337b25f3e5a
+  creationTimestamp: "2025-11-12T14:07:14Z"
   finalizers:
   - finalizer.managedresource.crossplane.io
   generateName: configuration-aws-network-
   generation: 4
   labels:
     access: public
-    crossplane.io/claim-name: ""
-    crossplane.io/claim-namespace: ""
     crossplane.io/composite: configuration-aws-network
     networks.aws.platform.upbound.io/network-id: configuration-aws-network
     zone: us-west-2a
-  name: configuration-aws-network-8tl8n
+  name: configuration-aws-network-5264b4e8cc04
+  namespace: default
   ownerReferences:
   - apiVersion: aws.platform.upbound.io/v1alpha1
     blockOwnerDeletion: true
     controller: true
-    kind: XNetwork
+    kind: Network
     name: configuration-aws-network
-    uid: 26d63562-ba4c-4c4e-bd9c-e8c90f98c797
-  resourceVersion: "751084"
-  uid: 1138b882-3684-4fe6-a9a9-2bb1f9286652
+    uid: 283a30f0-fd42-4766-97a8-ac28d501d056
+  resourceVersion: "626159"
+  uid: 564fb3f0-db15-4e37-ad87-c3bd06d9a045
 spec:
-  deletionPolicy: Delete
   forProvider:
     availabilityZone: us-west-2a
     cidrBlock: 192.168.0.0/18
@@ -37,24 +35,31 @@ spec:
     privateDnsHostnameTypeOnLaunch: ip-name
     region: us-west-2
     tags:
-      crossplane-kind: subnet.ec2.aws.upbound.io
-      crossplane-name: configuration-aws-network-8tl8n
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-5264b4e8cc04
       crossplane-providerconfig: default
+      fromValue: tagFromValue
       kubernetes.io/role/elb: "1"
       networks.aws.platform.upbound.io/network-id: configuration-aws-network
-    vpcId: vpc-0ba6a91df9e9ba07e
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
     vpcIdRef:
-      name: configuration-aws-network-8b25q
+      name: configuration-aws-network-1b95946a5b6b
+      namespace: default
     vpcIdSelector:
       matchControllerRef: true
   initProvider: {}
   managementPolicies:
   - '*'
   providerConfigRef:
+    kind: ProviderConfig
     name: default
 status:
   atProvider:
-    arn: arn:aws:ec2:us-west-2:123456789012:subnet/subnet-010a73248007deacf
+    arn: arn:aws:ec2:us-west-2:609897127049:subnet/subnet-07943c337b25f3e5a
     assignIpv6AddressOnCreation: false
     availabilityZone: us-west-2a
     availabilityZoneId: usw2-az1
@@ -64,38 +69,50 @@ status:
     enableLniAtDeviceIndex: 0
     enableResourceNameDnsARecordOnLaunch: false
     enableResourceNameDnsAaaaRecordOnLaunch: false
-    id: subnet-010a73248007deacf
+    id: subnet-07943c337b25f3e5a
     ipv6CidrBlock: ""
     ipv6CidrBlockAssociationId: ""
     ipv6Native: false
     mapCustomerOwnedIpOnLaunch: false
     mapPublicIpOnLaunch: true
     outpostArn: ""
-    ownerId: "123456789012"
+    ownerId: "609897127049"
     privateDnsHostnameTypeOnLaunch: ip-name
+    region: us-west-2
     tags:
-      crossplane-kind: subnet.ec2.aws.upbound.io
-      crossplane-name: configuration-aws-network-8tl8n
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-5264b4e8cc04
       crossplane-providerconfig: default
+      fromValue: tagFromValue
       kubernetes.io/role/elb: "1"
       networks.aws.platform.upbound.io/network-id: configuration-aws-network
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
     tagsAll:
-      crossplane-kind: subnet.ec2.aws.upbound.io
-      crossplane-name: configuration-aws-network-8tl8n
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-5264b4e8cc04
       crossplane-providerconfig: default
+      fromValue: tagFromValue
       kubernetes.io/role/elb: "1"
       networks.aws.platform.upbound.io/network-id: configuration-aws-network
-    vpcId: vpc-0ba6a91df9e9ba07e
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
   conditions:
-  - lastTransitionTime: "2024-09-26T15:52:01Z"
+  - lastTransitionTime: "2025-11-12T14:18:06Z"
+    observedGeneration: 4
     reason: ReconcileSuccess
     status: "True"
     type: Synced
-  - lastTransitionTime: "2024-09-26T15:52:17Z"
+  - lastTransitionTime: "2025-11-12T14:08:00Z"
     reason: Available
     status: "True"
     type: Ready
-  - lastTransitionTime: "2024-09-26T15:52:14Z"
+  - lastTransitionTime: "2025-11-12T14:07:55Z"
     reason: Success
     status: "True"
     type: LastAsyncOperation

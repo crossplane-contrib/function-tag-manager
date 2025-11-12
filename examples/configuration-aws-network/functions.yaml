@@ -21,5 +21,4 @@ metadata:
   # annotations:
   #  render.crossplane.io/runtime: Development
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.3.3
-
+  package: index.docker.io/steve/function-tag-manager:v0.4.0

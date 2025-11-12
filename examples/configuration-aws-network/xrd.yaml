@@ -1,12 +1,13 @@
-apiVersion: apiextensions.crossplane.io/v1
+apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: xnetworks.aws.platform.upbound.io
+  name: networks.aws.platform.upbound.io
 spec:
+  scope: Namespaced
   group: aws.platform.upbound.io
   names:
-    kind: XNetwork
-    plural: xnetworks
+    kind: Network
+    plural: networks
   versions:
     - name: v1alpha1
       served: true
