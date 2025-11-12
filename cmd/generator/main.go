@@ -69,8 +69,6 @@ func (c *CLI) Run() error {
 	_, err = os.Stat(c.RepositoryDir)
 	if os.IsNotExist(err) {
 		log.Debug("repo does not exist on the filesystem, cloning", "directory", c.RepositoryDir)
-		// memoryfs := memfs.New()
-		// storage := memory.NewStorage()
 
 		storage := filesystem.NewStorage(filesystemfs, cache.NewObjectLRU(cache.DefaultMaxSize))
 		g.Cloner = Cloner{
@@ -143,7 +141,6 @@ func (g Generater) Clone() (*git.Worktree, error) {
 	}
 
 	err = wt.Checkout(&git.CheckoutOptions{
-		// Hash:                      c.Hash,
 		Branch:                    plumbing.ReferenceName(g.Reference),
 		SparseCheckoutDirectories: g.Paths,
 	})

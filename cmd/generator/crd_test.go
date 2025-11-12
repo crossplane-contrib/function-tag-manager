@@ -462,7 +462,7 @@ spec:
 
 			// Create files
 			for path, content := range tc.files {
-				err := util.WriteFile(fs, path, []byte(content), 0644)
+				err := util.WriteFile(fs, path, []byte(content), 0o644)
 				if err != nil {
 					t.Fatalf("Failed to write test file %s: %v", path, err)
 				}
@@ -477,6 +477,7 @@ spec:
 					t.Errorf("%s\nExamineFieldFromCRDVersions(): expected error containing %q, got nil", tc.reason, tc.errStr)
 					return
 				}
+
 				if diff := cmp.Diff(tc.errStr, err.Error(), cmpopts.AcyclicTransformer("substr", func(s string) bool {
 					return len(s) > 0 && len(tc.errStr) > 0 && len(s) >= len(tc.errStr)
 				})); diff != "" && !cmp.Equal(tc.errStr, err.Error()) {
@@ -485,6 +486,7 @@ spec:
 						t.Errorf("%s\nExamineFieldFromCRDVersions(): error should contain %q, got %q", tc.reason, tc.errStr, err.Error())
 					}
 				}
+
 				return
 			}
 
