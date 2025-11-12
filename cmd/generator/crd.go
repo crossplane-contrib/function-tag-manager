@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"path/filepath"
 
-	"github.com/crossplane-contrib/function-tag-manager/util/render"
+	"github.com/crossplane-contrib/function-tag-manager/cmd/generator/render"
 	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-billy/v6/util"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"

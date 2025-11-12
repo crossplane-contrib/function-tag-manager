@@ -1,4 +1,4 @@
-// Package filters resources on whether they support tags
+// Package filters determines whether resources support tags
 package filters
 
 // ResourceFilter is a map indicating whether a resource supports tags.

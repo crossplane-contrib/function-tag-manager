@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
-	"github.com/crossplane-contrib/function-tag-manager/util/render"
+	"github.com/crossplane-contrib/function-tag-manager/cmd/generator/render"
 	"github.com/crossplane/function-sdk-go"
 	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-billy/v6/osfs"
