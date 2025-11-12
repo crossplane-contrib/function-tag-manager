@@ -30,18 +30,12 @@ type CLI struct {
 	GitBranchOriginMain     string `help:"Git branch to clone." default:"refs/remotes/origin/main"`
 }
 
-// const (
-// 	RepositoryDir           = "provider-upjet-aws"
-// 	RepoURL                 = "https://github.com/crossplane-contrib/provider-upjet-aws.git"
-// 	CrossplanePackageCRDDir = "package/crds"
-// 	GitBranchOriginMain     = "refs/remotes/origin/main"
-// )
-
 // Cloner clones Git repositories.
 type Cloner struct {
-	Hash plumbing.Hash
 	// Paths to extract from the repository
 	Paths []string
+	// Branch to clone
+	Reference string
 	// Storage backend to use
 	Storage  storage.Storer
 	RepoURL  string
@@ -80,11 +74,11 @@ func (c *CLI) Run() error {
 
 		storage := filesystem.NewStorage(filesystemfs, cache.NewObjectLRU(cache.DefaultMaxSize))
 		g.Cloner = Cloner{
-			// Hash:     plumbing.NewHash(tag),
-			Paths:    []string{c.CrossplanePackageCRDDir},
-			RepoURL:  c.RepoURL,
-			Storage:  storage,
-			Worktree: filesystemfs,
+			Paths:     []string{c.CrossplanePackageCRDDir},
+			Reference: c.GitBranchOriginMain,
+			RepoURL:   c.RepoURL,
+			Storage:   storage,
+			Worktree:  filesystemfs,
 		}
 
 		w, err = g.Clone()
@@ -150,7 +144,7 @@ func (g Generater) Clone() (*git.Worktree, error) {
 
 	err = wt.Checkout(&git.CheckoutOptions{
 		// Hash:                      c.Hash,
-		Branch:                    plumbing.ReferenceName("refs/remotes/origin/main"),
+		Branch:                    plumbing.ReferenceName(g.Reference),
 		SparseCheckoutDirectories: g.Paths,
 	})
 	if err != nil {
