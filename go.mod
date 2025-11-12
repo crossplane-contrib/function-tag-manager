@@ -7,10 +7,14 @@ require (
 	github.com/alecthomas/kong v1.12.1
 	github.com/crossplane/crossplane-runtime/v2 v2.1.0
 	github.com/crossplane/function-sdk-go v0.5.0
+	github.com/go-git/go-billy/v6 v6.0.0-20251022185412-61e52df296a5
+	github.com/go-git/go-git/v6 v6.0.0-20251103200709-47b1ed2930c9
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.10
+	k8s.io/apiextensions-apiserver v0.34.1
 	k8s.io/apimachinery v0.34.1
 	sigs.k8s.io/controller-tools v0.19.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -27,8 +31,6 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
-	github.com/go-git/go-billy/v6 v6.0.0-20251022185412-61e52df296a5 // indirect
-	github.com/go-git/go-git/v6 v6.0.0-20251103200709-47b1ed2930c9 // indirect
 	github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
@@ -93,7 +95,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.34.1 // indirect
-	k8s.io/apiextensions-apiserver v0.34.1 // indirect
 	k8s.io/client-go v0.34.1 // indirect
 	k8s.io/code-generator v0.34.1 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
@@ -104,5 +105,4 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
-	sigs.k8s.io/yaml v1.6.0 // indirect
 )
