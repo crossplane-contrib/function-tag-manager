@@ -17,9 +17,9 @@ import (
 
 // ExamineFieldFromCRDVersions walks a directory of CRDs and
 // determines if a field exists.
-func ExamineFieldFromCRDVersions(f billy.Filesystem) (render.FilterList, error) {
+func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.FilterList, error) {
 	filter := render.FilterList{}
-	err := util.Walk(f, "", func(path string, info fs.FileInfo, e error) error {
+	err := util.Walk(f, root, func(path string, info fs.FileInfo, e error) error {
 		if e != nil {
 			return e
 		}

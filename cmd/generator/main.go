@@ -45,7 +45,7 @@ type Cloner struct {
 // Generater generates filters from CRD directories.
 type Generater struct {
 	Cloner
-
+	CRDDir        string
 	Logger        logging.Logger
 	RepoDirectory string
 }
@@ -58,12 +58,14 @@ func (c *CLI) Run() error {
 
 	log.Info("Generating resource filters from CRDs")
 	g := Generater{
+		CRDDir:        c.CrossplanePackageCRDDir,
 		Logger:        log,
 		RepoDirectory: c.RepositoryDir,
 	}
 
 	var w *git.Worktree
 
+	var bf billy.Filesystem
 	filesystemfs := osfs.New(c.RepositoryDir)
 
 	_, err = os.Stat(c.RepositoryDir)
@@ -83,18 +85,17 @@ func (c *CLI) Run() error {
 		if err != nil {
 			return err
 		}
-
+		bf = w.Filesystem
 		log.Debug("git clone complete")
 	} else {
 		log.Debug("using existing git repo", "directory", c.RepositoryDir)
-
-		w = &git.Worktree{Filesystem: filesystemfs}
-		g.Worktree = w.Filesystem
+		bf = filesystemfs
+		//g.Worktree = w.Filesystem
 	}
 
 	log.Debug("examining CRD files", "directory", c.CrossplanePackageCRDDir)
 
-	filter, err := ExamineFieldFromCRDVersions(w.Filesystem)
+	filter, err := ExamineFieldFromCRDVersions(bf, g.CRDDir)
 	if err != nil {
 		return err
 	}
@@ -102,6 +103,7 @@ func (c *CLI) Run() error {
 	var out *os.File
 	if c.OutputFile == "" {
 		out = os.Stdout
+		defer out.Close()
 	} else {
 		out, err = os.Create(c.OutputFile)
 		if err != nil {
@@ -117,9 +119,6 @@ func (c *CLI) Run() error {
 func main() {
 	ctx := kong.Parse(&CLI{}, kong.Description("Generate filter lists from Provider CRDs"))
 	ctx.FatalIfErrorf(ctx.Run())
-}
-
-func FetchRepository() {
 }
 
 // Clone performs a sparse checkout of a git repository.

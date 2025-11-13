@@ -2,7 +2,7 @@
 package render
 
 import (
-	"os"
+	"io"
 	"text/template"
 )
 
@@ -16,7 +16,7 @@ type Filter struct {
 type FilterList []Filter
 
 // Render renders resource.
-func Render(writer *os.File, resources []Filter, t string) error {
+func Render(writer io.Writer, resources []Filter, t string) error {
 	tmpl, err := template.New("template").Parse(t)
 	if err != nil {
 		return err

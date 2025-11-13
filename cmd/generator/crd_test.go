@@ -206,6 +206,8 @@ func TestCheckFieldPath(t *testing.T) {
 }
 
 func TestExamineFieldFromCRDVersions(t *testing.T) {
+	const testRootDir = "package/crds"
+
 	// CRD with tags field
 	crdWithTags := `apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -460,16 +462,23 @@ spec:
 			// Create in-memory filesystem
 			fs := memfs.New()
 
-			// Create files
+			// Create the root directory
+			err := fs.MkdirAll(testRootDir, 0o755)
+			if err != nil {
+				t.Fatalf("Failed to create root directory: %v", err)
+			}
+
+			// Create files in root directory
 			for path, content := range tc.files {
-				err := util.WriteFile(fs, path, []byte(content), 0o644)
+				fullPath := testRootDir + "/" + path
+				err := util.WriteFile(fs, fullPath, []byte(content), 0o644)
 				if err != nil {
-					t.Fatalf("Failed to write test file %s: %v", path, err)
+					t.Fatalf("Failed to write test file %s: %v", fullPath, err)
 				}
 			}
 
 			// Run the function
-			got, err := ExamineFieldFromCRDVersions(fs)
+			got, err := ExamineFieldFromCRDVersions(fs, testRootDir)
 
 			// Check error
 			if tc.errStr != "" {
