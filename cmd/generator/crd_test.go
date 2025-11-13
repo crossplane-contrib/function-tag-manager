@@ -471,6 +471,7 @@ spec:
 			// Create files in root directory
 			for path, content := range tc.files {
 				fullPath := testRootDir + "/" + path
+
 				err := util.WriteFile(fs, fullPath, []byte(content), 0o644)
 				if err != nil {
 					t.Fatalf("Failed to write test file %s: %v", fullPath, err)
