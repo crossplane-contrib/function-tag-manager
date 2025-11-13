@@ -95,7 +95,6 @@ func (c *CLI) Run() error {
 		log.Debug("using existing git repo", "directory", c.RepositoryDir)
 
 		bf = filesystemfs
-		// g.Worktree = w.Filesystem
 	}
 
 	log.Debug("examining CRD files", "directory", c.CrossplanePackageCRDDir)
@@ -115,6 +114,8 @@ func (c *CLI) Run() error {
 		if err != nil {
 			return err
 		}
+
+		defer func() { _ = out.Close() }()
 	}
 
 	log.Debug("rendering template", "location", out.Name())
