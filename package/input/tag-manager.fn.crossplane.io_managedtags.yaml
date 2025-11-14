@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: managedtags.tag-manager.fn.crossplane.io
 spec:
   group: tag-manager.fn.crossplane.io
@@ -19,11 +19,12 @@ spec:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Input can be used to provide input to this Function.
+        description: ManagedTags can be used to provide input to this Function.
         properties:
           addTags:
-            description: AddTags are fields that will be added to every composed resource
+            description: AddTags are fields that will be added to every composed resource.
             items:
+              description: AddTag defines tags that should be added to every resource.
               properties:
                 fromFieldPath:
                   description: |-
@@ -83,7 +84,7 @@ spec:
                   type: array
                 policy:
                   description: TagManagerPolicy sets what happens when the tag exists
-                    in the resource
+                    in the resource.
                   enum:
                   - Replace
                   - Retain
@@ -112,7 +113,7 @@ spec:
           metadata:
             type: object
           removeTags:
-            description: IgnoreTags is a list of tag keys to remove from the resource
+            description: IgnoreTags is a list of tag keys to remove from the resource.
             items:
               description: RemoveTag is a tag that removed from the desired state.
               properties:
@@ -139,6 +140,8 @@ spec:
               - type
               type: object
             type: array
+        required:
+        - metadata
         type: object
     served: true
     storage: true

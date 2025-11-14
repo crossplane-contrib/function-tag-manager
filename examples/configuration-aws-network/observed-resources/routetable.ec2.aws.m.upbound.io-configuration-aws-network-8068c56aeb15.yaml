@@ -1,0 +1,104 @@
+apiVersion: ec2.aws.m.upbound.io/v1beta1
+kind: RouteTable
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: rt
+    crossplane.io/external-create-pending: "2025-11-12T14:07:43Z"
+    crossplane.io/external-create-succeeded: "2025-11-12T14:07:43Z"
+    crossplane.io/external-name: rtb-06b2e56bbb21409c5
+  creationTimestamp: "2025-11-12T14:07:14Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 3
+  labels:
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+  name: configuration-aws-network-8068c56aeb15
+  namespace: default
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Network
+    name: configuration-aws-network
+    uid: 283a30f0-fd42-4766-97a8-ac28d501d056
+  resourceVersion: "626228"
+  uid: bf164c2c-3b40-48dd-afe8-c8c3b632e4f6
+spec:
+  forProvider:
+    region: us-west-2
+    tags:
+      crossplane-kind: routetable.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-8068c56aeb15
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
+    vpcIdRef:
+      name: configuration-aws-network-1b95946a5b6b
+      namespace: default
+    vpcIdSelector:
+      matchControllerRef: true
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    kind: ProviderConfig
+    name: default
+status:
+  atProvider:
+    arn: arn:aws:ec2:us-west-2:609897127049:route-table/rtb-06b2e56bbb21409c5
+    id: rtb-06b2e56bbb21409c5
+    ownerId: "609897127049"
+    region: us-west-2
+    route:
+    - carrierGatewayId: ""
+      cidrBlock: 0.0.0.0/0
+      coreNetworkArn: ""
+      destinationPrefixListId: ""
+      egressOnlyGatewayId: ""
+      gatewayId: igw-052aaded484c10ee8
+      ipv6CidrBlock: ""
+      localGatewayId: ""
+      natGatewayId: ""
+      networkInterfaceId: ""
+      transitGatewayId: ""
+      vpcEndpointId: ""
+      vpcPeeringConnectionId: ""
+    tags:
+      crossplane-kind: routetable.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-8068c56aeb15
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    tagsAll:
+      crossplane-kind: routetable.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-8068c56aeb15
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
+  conditions:
+  - lastTransitionTime: "2025-11-12T14:18:26Z"
+    observedGeneration: 3
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2025-11-12T14:08:17Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-11-12T14:07:45Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
