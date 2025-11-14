@@ -42,8 +42,8 @@ type Cloner struct {
 	Worktree billy.Filesystem
 }
 
-// Generater generates filters from CRD directories.
-type Generater struct {
+// Generator generates filters from CRD directories.
+type Generator struct {
 	Cloner
 
 	CRDDir        string
@@ -58,7 +58,7 @@ func (c *CLI) Run() error {
 	}
 
 	log.Info("Generating resource filters from CRDs")
-	g := Generater{
+	g := Generator{
 		CRDDir:        c.CrossplanePackageCRDDir,
 		Logger:        log,
 		RepoDirectory: c.RepositoryDir,
@@ -127,7 +127,7 @@ func main() {
 }
 
 // Clone performs a sparse checkout of a git repository.
-func (g Generater) Clone() (*git.Worktree, error) {
+func (g Generator) Clone() (*git.Worktree, error) {
 	g.Logger.Info("cloning repo", "url", g.RepoURL)
 
 	r, err := git.Clone(g.Storage, g.Worktree, &git.CloneOptions{
