@@ -107,8 +107,6 @@ func (c *CLI) Run() error {
 	var out *os.File
 	if c.OutputFile == "" {
 		out = os.Stdout
-
-		defer func() { _ = out.Close() }()
 	} else {
 		out, err = os.Create(c.OutputFile)
 		if err != nil {
