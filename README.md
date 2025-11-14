@@ -3,7 +3,8 @@
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
 
-Currently only AWS resources that support tags are managed.
+Currently only AWS resources that support tags are managed, and starting with
+version v0.5.0 v2 Namespace and Cluster-scoped resources are supported.
 
 There several use cases for this Function:
 
@@ -23,7 +24,7 @@ kind: Function
 metadata:
   name: crossplane-contrib-function-tag-manager
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.4.0
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.5.0
 ```
 
 ## Using this Function in a Composition
@@ -36,14 +37,14 @@ created Desired State. Below is an example pipeline step:
   functionRef:
     name: crossplane-contrib-function-tag-manager
   input:
-    apiVersion: tag-manger.fn.crossplane.io/v1beta1
+    apiVersion: tag-manager.fn.crossplane.io/v1beta1
     kind: ManagedTags
     addTags:
     - type: FromValue
       policy: Replace
       tags: 
-        from: value
-        add: tags
+        key1: value1
+        key2: value2
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.additionalTags
       policy: Replace
@@ -79,8 +80,8 @@ The `FromCompositeField` type indicates that the tags will be imported from the 
     - type: FromValue
       policy: Replace
       tags: 
-        from: value
-        add: tags
+        key1: value1
+        key2: value2
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.additionalTags
       policy: Replace
@@ -156,8 +157,10 @@ metadata:
 
 This function currently supports a subset of AWS that allow setting of tags.
 
-A scan of the 1.14 AWS provider shows that 475 resources support tags and 482 do not.
-The Provider CRDs were scanned to generate the list in [filter.go](filter.go).
+A scan of the v2.2.0 AWS provider shows that 498 resources support tags and 477 do not. Starting with the 2.x provider both Cluster
+and Namespace-scoped resources are supported, so for each resource there are two Custom Resource Definitions.
+
+The Provider CRDs were scanned using [`cmd/generator/main.go`](cmd/generator/main.go) to generate the list in [filter.go](filters/zz_provider-upjet-aws.go).
 
 ## Developing this Function
 
@@ -167,11 +170,15 @@ $ go generate ./...
 
 # Run tests
 $ go test -cover ./...
-ok      github.com/stevendborrelli/function-tag-manager 0.398s  coverage: 67.9% of statements
-        github.com/stevendborrelli/function-tag-manager/input/v1beta1           coverage: 0.0% of statements
+ok      github.com/crossplane-contrib/function-tag-manager      0.542s  coverage: 68.6% of statements
+ok      github.com/crossplane-contrib/function-tag-manager/cmd/generator        1.035s  coverage: 43.2% of statements
+        github.com/crossplane-contrib/function-tag-manager/cmd/generator/render         coverage: 0.0% of statements
+        github.com/crossplane-contrib/function-tag-manager/filters              coverage: 0.0% of statements
+        github.com/crossplane-contrib/function-tag-manager/input/v1beta1                coverage: 0.0% of statements
 
 # Lint the code
-$ docker run --rm -v $(pwd):/app -v ~/.cache/golangci-lint/v1.61.0:/root/.cache -w /app golangci/golangci-lint:v1.61.0 golangci-lint run
+$ docker run --rm -v $(pwd):/app -v ~/.cache/golangci-lint/v2.6.1:/root/.cache -w /app golangci/golangci-lint:v2.6.1 golangci-lint run
+0 issues.
 
 # Build a Docker image - see Dockerfile
 $ docker build .
@@ -212,5 +219,5 @@ crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o f
 I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
 
 ```shell
-up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.4.0 -f function-tag-manager.xpkg
+up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.5.0 -f function-tag-manager.xpkg
 ```
