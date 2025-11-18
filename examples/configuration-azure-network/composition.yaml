@@ -1,0 +1,148 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: networks.azure.platform.upbound.io
+  labels:
+    provider: azure
+    type: basic
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: azure.platform.upbound.io/v1alpha1
+    kind: Network
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: crossplane-contrib-function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        patchSets:
+          - name: providerConfigRef
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.providerConfigName
+                toFieldPath: spec.providerConfigRef.name
+          - name: network-id
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.id
+                toFieldPath: metadata.labels[azure.platform.upbound.io/network-id]
+          - name: region
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.region
+                toFieldPath: spec.forProvider.location
+
+        resources:
+          - name: resourceGroup
+            base:
+              apiVersion: azure.m.upbound.io/v1beta1
+              kind: ResourceGroup
+              spec:
+                providerConfigRef:
+                  kind: ProviderConfig
+            patches:
+              - type: PatchSet
+                patchSetName: providerConfigRef
+              - type: PatchSet
+                patchSetName: network-id
+              - type: PatchSet
+                patchSetName: region
+
+          - name: virtualNetwork
+            base:
+              apiVersion: network.azure.m.upbound.io/v1beta1
+              kind: VirtualNetwork
+              spec:
+                forProvider:
+                  addressSpace:
+                    - 192.168.0.0/16
+                  resourceGroupNameSelector:
+                    matchControllerRef: true
+                  tags:
+                    fromValue2: should-be-deleted
+                providerConfigRef:
+                  kind: ProviderConfig
+            patches:
+              - type: PatchSet
+                patchSetName: providerConfigRef
+              - type: PatchSet
+                patchSetName: network-id
+              - type: PatchSet
+                patchSetName: region
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.id
+                toFieldPath: metadata.name
+                transforms:
+                  - type: string
+                    string:
+                      fmt: "%s-vnet"
+                      type: Format
+
+          - name: subnet
+            base:
+              apiVersion: network.azure.m.upbound.io/v1beta1
+              kind: Subnet
+              spec:
+                forProvider:
+                  addressPrefixes:
+                    - 192.168.1.0/24
+                  resourceGroupNameSelector:
+                    matchControllerRef: true
+                  serviceEndpoints:
+                    - Microsoft.Sql
+                  virtualNetworkNameSelector:
+                    matchControllerRef: true
+                providerConfigRef:
+                  kind: ProviderConfig
+            patches:
+              - type: PatchSet
+                patchSetName: providerConfigRef
+              - type: PatchSet
+                patchSetName: network-id
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.id
+                toFieldPath: metadata.name
+                transforms:
+                  - type: string
+                    string:
+                      fmt: "%s-sn"
+                      type: Format
+    - step: manage-tags
+      functionRef:
+        name: crossplane-contrib-function-tag-manager
+      input:
+        apiVersion: tag-manger.fn.crossplane.io/v1beta1
+        kind: ManagedTags
+        addTags:
+          - type: FromValue
+            policy: Replace
+            tags:
+              fromValue: tagFromValue
+              fromValue2: tagFromValue2
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.parameters.additionalTags
+            policy: Replace
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.parameters.optionalTags
+            policy: Retain
+        ignoreTags:
+          - type: FromValue
+            policy: Replace
+            keys:
+              - external-tag-1
+              - external-tag-2
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.parameters.ignoreTagKeysReplace
+            policy: Replace
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.parameters.ignoreTagKeysRetain
+            policy: Retain
+        removeTags:
+          - type: FromValue
+            keys:
+              - fromValue2  # delete tag defined earlier in the pipeline
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.parameters.removeTags

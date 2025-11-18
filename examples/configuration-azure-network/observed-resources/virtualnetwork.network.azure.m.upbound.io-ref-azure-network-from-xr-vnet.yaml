@@ -1,0 +1,98 @@
+apiVersion: network.azure.m.upbound.io/v1beta1
+kind: VirtualNetwork
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: virtualNetwork
+    crossplane.io/external-create-failed: "2025-11-18T11:26:04Z"
+    crossplane.io/external-create-pending: "2025-11-18T11:26:04Z"
+    crossplane.io/external-create-succeeded: "2025-11-18T11:24:59Z"
+    crossplane.io/external-name: ref-azure-network-from-xr-vnet
+  creationTimestamp: "2025-11-18T11:24:58Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generation: 5
+  labels:
+    azure.platform.upbound.io/network-id: ref-azure-network-from-xr
+    crossplane.io/composite: ref-azure-network
+  name: ref-azure-network-from-xr-vnet
+  namespace: default
+  ownerReferences:
+  - apiVersion: azure.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Network
+    name: ref-azure-network
+    uid: 66aedb9b-3555-43ad-925a-467914378f62
+  resourceVersion: "12791"
+  uid: 52153770-e603-401a-9d60-69319e27fe35
+spec:
+  forProvider:
+    addressSpace:
+    - 192.168.0.0/16
+    location: westus
+    privateEndpointVnetPolicies: Disabled
+    resourceGroupName: ref-azure-network-b96719dee069
+    resourceGroupNameRef:
+      name: ref-azure-network-b96719dee069
+      namespace: default
+    resourceGroupNameSelector:
+      matchControllerRef: true
+    tags:
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    kind: ProviderConfig
+    name: default
+status:
+  atProvider:
+    addressSpace:
+    - 192.168.0.0/16
+    bgpCommunity: ""
+    ddosProtectionPlan: {}
+    edgeZone: ""
+    encryption: {}
+    flowTimeoutInMinutes: 0
+    guid: 8ffcb0a5-02ed-4a88-b617-99c67607b143
+    id: /subscriptions/038f2b7c-3265-43b8-8624-c9ad5da610a8/resourceGroups/ref-azure-network-b96719dee069/providers/Microsoft.Network/virtualNetworks/ref-azure-network-from-xr-vnet
+    location: westus
+    privateEndpointVnetPolicies: Disabled
+    resourceGroupName: ref-azure-network-b96719dee069
+    subnet:
+    - addressPrefixes:
+      - 192.168.1.0/24
+      defaultOutboundAccessEnabled: true
+      delegation: {}
+      id: /subscriptions/038f2b7c-3265-43b8-8624-c9ad5da610a8/resourceGroups/ref-azure-network-b96719dee069/providers/Microsoft.Network/virtualNetworks/ref-azure-network-from-xr-vnet/subnets/ref-azure-network-from-xr-sn
+      name: ref-azure-network-from-xr-sn
+      privateEndpointNetworkPolicies: Disabled
+      privateLinkServiceNetworkPoliciesEnabled: true
+      routeTableId: ""
+      securityGroup: ""
+      serviceEndpoints:
+      - Microsoft.Sql
+    tags:
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+  conditions:
+  - lastTransitionTime: "2025-11-18T11:27:16Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-11-18T11:42:20Z"
+    observedGeneration: 5
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2025-11-18T11:27:11Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
