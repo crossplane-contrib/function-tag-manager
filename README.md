@@ -3,8 +3,9 @@
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
 
-Currently only AWS resources that support tags are managed, and starting with
-version v0.5.0 v2 Namespace and Cluster-scoped resources are supported.
+AWS and Azure resources managed by upjet-based providers that support tags are
+supported, and the function can manage tags for both cluster and namespace-scoped
+resources.
 
 There several use cases for this Function:
 
@@ -155,12 +156,32 @@ metadata:
 
 ## Filtering Resources
 
-This function currently supports a subset of AWS that allow setting of tags.
+This function supports both AWS and Azure resources that allow setting of tags.
 
-A scan of the v2.2.0 AWS provider shows that 498 resources support tags and 477 do not. Starting with the 2.x provider both Cluster
+### AWS Resources
+
+A scan of the AWS provider shows that 498 resources support tags and 477 do not. Starting with the 2.x provider both Cluster
 and Namespace-scoped resources are supported, so for each resource there are two Custom Resource Definitions.
 
-The Provider CRDs were scanned using [`cmd/generator/main.go`](cmd/generator/main.go) to generate the list in [filter.go](filters/zz_provider-upjet-aws.go).
+The AWS Provider CRDs were scanned using [`cmd/generator/main.go`](cmd/generator/main.go) to generate the list in [filters/zz_provider-upjet-aws.go](filters/zz_provider-upjet-aws.go).
+
+### Azure Resources
+
+A scan of the Azure provider shows that 550 resources support tags and 927 do not. Both Cluster-scoped (`azure.upbound.io`)
+and Namespace-scoped (`azure.m.upbound.io`) API groups are supported.
+
+The Azure Provider CRDs were scanned using the same generator to create the list in [filters/zz_provider-upjet-azure.go](filters/zz_provider-upjet-azure.go).
+
+### Regenerating Filters
+
+To regenerate the resource filters for both providers:
+
+```shell
+cd filters
+go generate ./...
+```
+
+This will clone the provider repositories, scan their CRDs, and regenerate the filter files.
 
 ## Developing this Function
 
