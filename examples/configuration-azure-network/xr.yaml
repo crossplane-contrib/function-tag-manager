@@ -1,0 +1,22 @@
+apiVersion: azure.platform.upbound.io/v1alpha1
+kind: Network
+metadata:
+  annotations:
+  name: ref-azure-network
+spec:
+  parameters:
+    id: ref-azure-network-from-xr
+    region: westus
+    additionalTags:
+      replaceFromXR: value1
+      replaceFromXR2: value2
+    optionalTags:
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    # Tag keys to ignore can be set in the Azure console
+    ignoreTagKeysReplace:
+      - ignoreReplace1
+      - ignoreReplace2
+    # if there is a conflict, keep the existing tags
+    ignoreTagKeysRetain:
+      - ignoreRetain1

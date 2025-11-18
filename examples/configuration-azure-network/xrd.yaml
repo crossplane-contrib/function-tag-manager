@@ -1,0 +1,62 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: networks.azure.platform.upbound.io
+spec:
+  group: azure.platform.upbound.io
+  names:
+    kind: Network
+    plural: networks
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  description: Network Parameters
+                  properties:
+                    id:
+                      type: string
+                      description: ID of this Network that other objects will use to refer to it.
+                    region:
+                      type: string
+                      description: Region is the region you'd like your resource to be created in.
+                    providerConfigName:
+                      description: Crossplane ProviderConfig to use for provisioning this resources
+                      type: string
+                      default: default
+                    additionalTags:
+                      description: A map of tags to add. Each tag must have a string key and value.
+                      additionalProperties:
+                        type: string
+                      type: object
+                    optionalTags:
+                      description: A map of tags to add. Each tag must have a string key and value.
+                      additionalProperties:
+                        type: string
+                      type: object
+                      x-kubernetes-map-type: granular
+                    ignoreTagKeysReplace:
+                      description: List of tag keys to ignore
+                      type: array
+                      items:
+                        type: string
+                    ignoreTagKeysRetain:
+                      description: List of tag keys to retain
+                      type: array
+                      items:
+                        type: string
+                  required:
+                    - providerConfigName
+                    - id
+                    - region
+                  type: object
+              required:
+                - parameters

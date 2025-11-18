@@ -10,7 +10,7 @@ import (
 )
 
 func TestSupportedManagedResource(t *testing.T) {
-	AWSResourceFilter := filters.NewResourceFilter()
+	ResourceFilter := filters.NewResourceFilter()
 
 	type args struct {
 		desired *resource.DesiredComposed
@@ -42,7 +42,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: false,
 		},
@@ -68,7 +68,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: false,
 		},
@@ -91,7 +91,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: true,
 		},
@@ -109,7 +109,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: false,
 		},
@@ -155,7 +155,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: true,
 		},
@@ -178,7 +178,7 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
 			},
 			want: false,
 		},
@@ -201,7 +201,194 @@ func TestSupportedManagedResource(t *testing.T) {
 						},
 					}},
 				},
-				filter: AWSResourceFilter,
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureResourceGroupInclude": {
+			reason: "Include Azure ResourceGroup that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "azure.upbound.io/v1beta1",
+							"kind":       "ResourceGroup",
+							"metadata": map[string]any{
+								"name": "test-resource-group",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"location": "eastus",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureNamespacedResourceGroupInclude": {
+			reason: "Include Azure ResourceGroup with .m namespaced group that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "azure.m.upbound.io/v1beta1",
+							"kind":       "ResourceGroup",
+							"metadata": map[string]any{
+								"name": "test-resource-group",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"location": "eastus",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureAutomationAccountInclude": {
+			reason: "Include Azure Automation Account that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "automation.azure.upbound.io/v1beta1",
+							"kind":       "Account",
+							"metadata": map[string]any{
+								"name": "test-automation-account",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"location":          "eastus",
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureNamespacedAutomationAccountInclude": {
+			reason: "Include Azure Automation Account with .m namespaced group that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "automation.azure.m.upbound.io/v1beta2",
+							"kind":       "Account",
+							"metadata": map[string]any{
+								"name": "test-automation-account",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"location":          "eastus",
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureAPIManagementAPIExclude": {
+			reason: "Exclude Azure API Management API that doesn't support tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "apimanagement.azure.upbound.io/v1beta1",
+							"kind":       "API",
+							"metadata": map[string]any{
+								"name": "test-api",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: false,
+		},
+		"AzureNamespacedAPIManagementAPIExclude": {
+			reason: "Exclude Azure API Management API with .m namespaced group that doesn't support tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "apimanagement.azure.m.upbound.io/v1beta1",
+							"kind":       "API",
+							"metadata": map[string]any{
+								"name": "test-api",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: false,
+		},
+		"AzureMonitorAlertInclude": {
+			reason: "Include Azure Monitor Alert Processing Rule that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "alertsmanagement.azure.m.upbound.io/v1beta1",
+							"kind":       "MonitorAlertProcessingRuleActionGroup",
+							"metadata": map[string]any{
+								"name": "test-alert-rule",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
+			},
+			want: true,
+		},
+		"AzureAppConfigurationInclude": {
+			reason: "Include Azure App Configuration that supports tags",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "appconfiguration.azure.m.upbound.io/v1beta2",
+							"kind":       "Configuration",
+							"metadata": map[string]any{
+								"name": "test-app-config",
+							},
+							"spec": map[string]any{
+								"forProvider": map[string]any{
+									"location":          "eastus",
+									"resourceGroupName": "test-rg",
+								},
+							},
+						},
+					}},
+				},
+				filter: ResourceFilter,
 			},
 			want: true,
 		},

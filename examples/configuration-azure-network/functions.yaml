@@ -1,0 +1,17 @@
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: crossplane-contrib-function-patch-and-transform
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform:v0.9.2
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: crossplane-contrib-function-tag-manager
+  # Uncomment this annotation for local development using `go run . --insecure --debug` at the root directory
+  # annotations:
+  #  render.crossplane.io/runtime: Development
+spec:
+  package: index.docker.io/steve/function-tag-manager:v0.6.0
+  #package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.6.0

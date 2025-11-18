@@ -3,6 +3,7 @@ package render
 
 import (
 	"io"
+	"path/filepath"
 	"text/template"
 )
 
@@ -16,8 +17,8 @@ type Filter struct {
 type FilterList []Filter
 
 // Render renders resource.
-func Render(writer io.Writer, resources []Filter, t string) error {
-	tmpl, err := template.New("template").Parse(t)
+func Render(writer io.Writer, resources []Filter, templateFile string) error {
+	tmpl, err := template.New(filepath.Base(templateFile)).ParseFiles(templateFile)
 	if err != nil {
 		return err
 	}

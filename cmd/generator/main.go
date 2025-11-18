@@ -28,6 +28,7 @@ type CLI struct {
 	CrossplanePackageCRDDir string `help:"Location of CRD files" default:"package/crds"`
 	OutputFile              string `help:"file to output generated Go code"`
 	GitBranchOriginMain     string `help:"Git branch to clone." default:"refs/remotes/origin/main"`
+	TemplateFile            string `help:"Go Text Template to use to render filters" default:"templates/aws.tmpl"`
 }
 
 // Cloner clones Git repositories.
@@ -118,7 +119,7 @@ func (c *CLI) Run() error {
 
 	log.Debug("rendering template", "location", out.Name())
 
-	return render.Render(out, filter, render.AWSResourceFilterTemplate)
+	return render.Render(out, filter, c.TemplateFile)
 }
 
 func main() {
