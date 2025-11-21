@@ -8,7 +8,7 @@ require (
 	github.com/crossplane/crossplane-runtime/v2 v2.1.0
 	github.com/crossplane/function-sdk-go v0.5.0
 	github.com/go-git/go-billy/v6 v6.0.0-20251022185412-61e52df296a5
-	github.com/go-git/go-git/v6 v6.0.0-20251103200709-47b1ed2930c9
+	github.com/go-git/go-git/v6 v6.0.0-20251121083746-39fcec474970
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.10
 	k8s.io/apiextensions-apiserver v0.34.2
@@ -79,7 +79,7 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/mod v0.30.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.33.0 // indirect
