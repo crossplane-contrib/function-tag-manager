@@ -20,7 +20,7 @@ The function is installed as a Crossplane Package. Apply the following
 YAML manifest to your Crossplane cluster.
 
 ```yaml
-apiVersion: pkg.crossplane.io/v1beta1
+apiVersion: pkg.crossplane.io/v1
 kind: Function
 metadata:
   name: crossplane-contrib-function-tag-manager
