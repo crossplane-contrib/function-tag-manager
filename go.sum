@@ -35,6 +35,8 @@ github.com/crossplane/function-sdk-go v0.5.0 h1:wF+pOsR6jlIUHZjpSL6tbuSP0UB7s25+
 github.com/crossplane/function-sdk-go v0.5.0/go.mod h1:bIvGe17dIdpZ/YULrg5xAP8MK+eS3ot5BAuQEntaeWc=
 github.com/cyphar/filepath-securejoin v0.5.0 h1:hIAhkRBMQ8nIeuVwcAoymp7MY4oherZdAxD+m0u9zaw=
 github.com/cyphar/filepath-securejoin v0.5.0/go.mod h1:Sdj7gXlvMcPZsbhwhQ33GguGLDGQL7h7bg04C/+u9jI=
+github.com/cyphar/filepath-securejoin v0.6.1 h1:5CeZ1jPXEiYt3+Z6zqprSAgSWiggmpVyciv8syjIpVE=
+github.com/cyphar/filepath-securejoin v0.6.1/go.mod h1:A8hd4EnAeyujCJRrICiOWqjS1AX0a9kM5XL+NwKoYSc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
@@ -61,6 +63,8 @@ github.com/go-git/gcfg/v2 v2.0.2 h1:MY5SIIfTGGEMhdA7d7JePuVVxtKL7Hp+ApGDJAJ7dpo=
 github.com/go-git/gcfg/v2 v2.0.2/go.mod h1:/lv2NsxvhepuMrldsFilrgct6pxzpGdSRC13ydTLSLs=
 github.com/go-git/go-billy/v6 v6.0.0-20251022185412-61e52df296a5 h1:9nXOQ3HupDEerUXxiPrw3olFy/jHGZ3O3DyM/o6ejdc=
 github.com/go-git/go-billy/v6 v6.0.0-20251022185412-61e52df296a5/go.mod h1:TpCYxdQ0tWZkrnAkd7yqK+z1C8RKcyjcaYAJNAcnUnM=
+github.com/go-git/go-billy/v6 v6.0.0-20260114122816-19306b749ecc h1:rhkjrnRkamkRC7woapp425E4CAH6RPcqsS9X8LA93IY=
+github.com/go-git/go-billy/v6 v6.0.0-20260114122816-19306b749ecc/go.mod h1:X1oe0Z2qMsa9hkar3AAPuL9hu4Mi3ztXEjdqRhr6fcc=
 github.com/go-git/go-git-fixtures/v5 v5.1.1 h1:OH8i1ojV9bWfr0ZfasfpgtUXQHQyVS8HXik/V1C099w=
 github.com/go-git/go-git-fixtures/v5 v5.1.1/go.mod h1:Altk43lx3b1ks+dVoAG2300o5WWUnktvfY3VI6bcaXU=
 github.com/go-git/go-git/v6 v6.0.0-20251103200709-47b1ed2930c9 h1:ku5ebH4vCvEjg1zSQd3fRNhEj5o8BgScVY83JKBsj6Y=
@@ -283,6 +287,8 @@ golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.38.0 h1:3yZWxaJjBmCWXqhN1qh02AkOnCQ1poK6oF+a7xWL6Gc=
 golang.org/x/sys v0.38.0/go.mod h1:OgkHotnGiDImocRcuBABYBEXf8A9a87e/uXjp9XT3ks=
+golang.org/x/sys v0.40.0 h1:DBZZqJ2Rkml6QMQsZywtnjnnGvHza6BTfYFWY9kjEWQ=
+golang.org/x/sys v0.40.0/go.mod h1:OgkHotnGiDImocRcuBABYBEXf8A9a87e/uXjp9XT3ks=
 golang.org/x/term v0.37.0 h1:8EGAD0qCmHYZg6J17DvsMy9/wJ7/D/4pV/wfnld5lTU=
 golang.org/x/term v0.37.0/go.mod h1:5pB4lxRNYYVZuTLmy8oR2BH8dflOR+IbTYFD8fi3254=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
