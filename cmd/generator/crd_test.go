@@ -67,7 +67,7 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {},
+						"spec": {Type: "object"},
 					},
 				},
 				path: []string{"spec"},
@@ -99,7 +99,7 @@ func TestCheckFieldPath(t *testing.T) {
 							Properties: map[string]extv1.JSONSchemaProps{
 								"forProvider": {
 									Properties: map[string]extv1.JSONSchemaProps{
-										"tags": {},
+										"tags": {Type: "object"},
 									},
 								},
 							},
@@ -175,7 +175,7 @@ func TestCheckFieldPath(t *testing.T) {
 											Properties: map[string]extv1.JSONSchemaProps{
 												"settings": {
 													Properties: map[string]extv1.JSONSchemaProps{
-														"tags": {},
+														"tags": {Type: "object"},
 													},
 												},
 											},
@@ -354,6 +354,37 @@ spec:
                     type: string
 `
 
+	// CRD with tags field of incorrect type
+	crdWithTagsIncorrectType := `apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: namedvalues.apimanagement.azure.upbound.io
+spec:
+  group: apimanagement.azure.upbound.io
+  names:
+    kind: NamedValue
+    plural: namedvalues
+  scope: Cluster
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              forProvider:
+                type: object
+                properties:
+                  tags:
+                    items:
+                      type: string
+                    type: array
+`
+
 	type testCase struct {
 		reason string
 		files  map[string]string
@@ -453,6 +484,15 @@ spec:
 			want: render.FilterList{
 				{GroupKind: "s3.aws.upbound.io/Bucket", Enabled: true},
 				{GroupKind: "acmpca.aws.upbound.io/Certificate", Enabled: false},
+			},
+		},
+		"SingleCRDWithTagsIncorrectType": {
+			reason: "Should correctly identify CRD with tags field of incorrect type",
+			files: map[string]string{
+				"namedvalue.yaml": crdWithTagsIncorrectType,
+			},
+			want: render.FilterList{
+				{GroupKind: "apimanagement.azure.upbound.io/NamedValue", Enabled: false},
 			},
 		},
 	}
