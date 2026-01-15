@@ -93,7 +93,7 @@ func checkFieldPath(schema *extv1.JSONSchemaProps, path []string) bool {
 
 	// If this is the last element in the path, we found it
 	if len(path) == 1 {
-		return true
+		return property.Type == "object"
 	}
 
 	// Otherwise, recurse into the next level
