@@ -44,6 +44,8 @@ const (
 	FromCompositeFieldPath TagManagerType = "FromCompositeFieldPath"
 	// FromValue are static values set in the function's input.
 	FromValue TagManagerType = "FromValue"
+	// FromEnvironmentFieldPath instructs the function to get tag settings from the Environment fieldpath.
+	FromEnvironmentFieldPath TagManagerType = "FromEnvironmentFieldPath"
 )
 
 // TagManagerPolicy sets what happens when the tag exists in the resource.

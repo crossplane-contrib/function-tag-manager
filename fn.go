@@ -6,10 +6,12 @@ import (
 
 	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
+	fncontext "github.com/crossplane/function-sdk-go/context"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
@@ -43,6 +45,17 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
+	env := &unstructured.Unstructured{}
+	if v, ok := request.GetContextKey(req, fncontext.KeyEnvironment); ok {
+		err := resource.AsObject(v.GetStructValue(), env)
+		if err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot get Composition environment from %T context key %q", req, fncontext.KeyEnvironment))
+			return rsp, nil
+		}
+
+		f.log.Debug("Loaded Composition environment from Function context", "context-key", fncontext.KeyEnvironment)
+	}
+
 	f.log.WithValues(
 		"xr-d", oxr.Resource.GetAPIVersion(),
 		"xr-kind", oxr.Resource.GetKind(),
@@ -51,7 +64,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	// Process all the AddTags into 2 groups based on Policy: Replace or Retain
 	// we also need to resolve any tags coming from a Composite fieldpath
-	additionalTags := f.ResolveAddTags(in.AddTags, oxr)
+	additionalTags := f.ResolveAddTags(in.AddTags, oxr, env)
 
 	// The composed resources that actually exist.
 	observedComposed, err := request.GetObservedComposedResources(req)
@@ -89,7 +102,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 		// Ignore tags only if there is an existing Composed resource with tags in the status
 		if observed, ok := observedComposed[name]; ok {
-			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed)
+			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed, env)
 			if ignoreTags != nil {
 				err := MergeTags(desired, *ignoreTags)
 				if err != nil {
@@ -98,7 +111,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			}
 		}
 
-		removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr)
+		removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr, env)
 		// Remove tags
 		if len(removeTags) > 0 {
 			err := RemoveTags(desired, removeTags)
