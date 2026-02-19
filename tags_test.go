@@ -18,9 +18,13 @@ func TestResolveAddTags(t *testing.T) {
 	fieldPath := "spec.additionalTags"
 	optionalFieldPath := "spec.optionalTags"
 
+	envFieldPathRetain := "tagsRetain"
+	envFieldPathReplace := "tagsReplace"
+
 	type args struct {
 		in  []v1beta1.AddTag
 		oxr *resource.Composite
+		env *unstructured.Unstructured
 	}
 
 	type want struct {
@@ -126,12 +130,44 @@ func TestResolveAddTags(t *testing.T) {
 				},
 			},
 		},
+		"ValuesFromEnvironment": {
+			reason: "Test getting tags from Environment field Path",
+			args: args{
+				in: []v1beta1.AddTag{
+					{
+						FromFieldPath: &envFieldPathReplace,
+						Type:          v1beta1.FromEnvironmentFieldPath,
+					},
+					{
+						FromFieldPath: &envFieldPathRetain,
+						Type:          v1beta1.FromEnvironmentFieldPath,
+						Policy:        v1beta1.ExistingTagPolicyRetain,
+					},
+				},
+				oxr: &resource.Composite{},
+				env: &unstructured.Unstructured{Object: map[string]any{
+					"tagsRetain": map[string]any{
+						"tag1": "retain",
+					},
+					"tagsReplace": map[string]any{
+						"tag2": "replace",
+					},
+				}},
+			},
+
+			want: want{
+				TagUpdater{
+					Replace: v1beta1.Tags{"tag2": "replace"},
+					Retain:  v1beta1.Tags{"tag1": "retain"},
+				},
+			},
+		},
 	}
 	f := &Function{log: logging.NewNopLogger()}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := f.ResolveAddTags(tc.args.in, tc.args.oxr)
+			got := f.ResolveAddTags(tc.args.in, tc.args.oxr, tc.args.env)
 
 			if diff := cmp.Diff(tc.want.tu, got); diff != "" {
 				t.Errorf("%s\nfResolveAddTags(): -want err, +got err:\n%s", tc.reason, diff)
@@ -227,10 +263,14 @@ func TestResolveIgnoreTags(t *testing.T) {
 	ignoreReplacePath := "spec.ignoreTagsReplace"
 	ignoreRetainPath := "spec.ignoreTagsRetain"
 
+	envReplacePath := "ignoreTagsReplace"
+	envRetainPath := "ignoreTagsRetain"
+
 	type args struct {
 		in       []v1beta1.IgnoreTag
 		oxr      *resource.Composite
 		observed *resource.ObservedComposed
+		env      *unstructured.Unstructured
 	}
 
 	type want struct {
@@ -364,13 +404,75 @@ func TestResolveIgnoreTags(t *testing.T) {
 				},
 			},
 		},
+		"ValuesFromEnvironment": {
+			reason: "Test ignoring tags from Environment field Path",
+			args: args{
+				in: []v1beta1.IgnoreTag{
+					{
+						Type:          v1beta1.FromEnvironmentFieldPath,
+						FromFieldPath: &envReplacePath,
+						Policy:        v1beta1.ExistingTagPolicyReplace,
+					},
+					{
+						Type:          v1beta1.FromEnvironmentFieldPath,
+						FromFieldPath: &envRetainPath,
+						Policy:        v1beta1.ExistingTagPolicyRetain,
+					},
+				},
+				oxr: &resource.Composite{},
+				observed: &resource.ObservedComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "ManagedResource",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"labels": map[string]any{
+									IgnoreResourceLabel: "False",
+								},
+							},
+							"status": map[string]any{
+								"atProvider": map[string]any{
+									"tags": map[string]any{
+										"replaceEnvKey": "fromEnvReplace",
+										"retainEnvKey":  "fromEnvRetain",
+										"retainEnvKey2": "fromEnvRetain2",
+										"unusedField":   "unused",
+									},
+								},
+							},
+						},
+					}},
+				},
+				env: &unstructured.Unstructured{Object: map[string]any{
+					"ignoreTagsReplace": []string{
+						"replaceEnvKey",
+					},
+					"ignoreTagsRetain": []string{
+						"retainEnvKey",
+						"retainEnvKey2",
+					},
+				}},
+			},
+			want: want{
+				&TagUpdater{
+					Replace: v1beta1.Tags{
+						"replaceEnvKey": "fromEnvReplace",
+					},
+					Retain: v1beta1.Tags{
+						"retainEnvKey":  "fromEnvRetain",
+						"retainEnvKey2": "fromEnvRetain2",
+					},
+				},
+			},
+		},
 	}
 
 	f := &Function{log: logging.NewNopLogger()}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			tu := f.ResolveIgnoreTags(tc.args.in, tc.args.oxr, tc.args.observed)
+			tu := f.ResolveIgnoreTags(tc.args.in, tc.args.oxr, tc.args.observed, tc.args.env)
 
 			if diff := cmp.Diff(tc.want.tu, tu); diff != "" {
 				t.Errorf("%s\nfResolveAddTags(): -want err, +got err:\n%s", tc.reason, diff)
@@ -382,9 +484,12 @@ func TestResolveIgnoreTags(t *testing.T) {
 func TestResolveRemoveTags(t *testing.T) {
 	fieldPath := "spec.removeTags"
 
+	envFieldPath := "removeTags"
+
 	type args struct {
 		in  []v1beta1.RemoveTag
 		oxr *resource.Composite
+		env *unstructured.Unstructured
 	}
 
 	type want struct {
@@ -468,14 +573,35 @@ func TestResolveRemoveTags(t *testing.T) {
 				keys: []string{"fromXR1", "fromXR2", "key1", "key2"},
 			},
 		},
+		"ValuesFromEnvironment": {
+			reason: "Test getting keys from Environment field Path",
+			args: args{
+				in: []v1beta1.RemoveTag{
+					{
+						Type:          v1beta1.FromEnvironmentFieldPath,
+						FromFieldPath: &envFieldPath,
+					},
+				},
+				oxr: &resource.Composite{},
+				env: &unstructured.Unstructured{Object: map[string]any{
+					"removeTags": []string{
+						"fromEnv1",
+						"fromEnv2",
+					},
+				}},
+			},
+			want: want{
+				keys: []string{"fromEnv1", "fromEnv2"},
+			},
+		},
 	}
 	f := &Function{log: logging.NewNopLogger()}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := f.ResolveRemoveTags(tc.args.in, tc.args.oxr)
+			got := f.ResolveRemoveTags(tc.args.in, tc.args.oxr, tc.args.env)
 
-			if diff := cmp.Diff(tc.want.keys, got); diff != "" {
+			if diff := cmp.Diff(tc.want.keys, got, cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
 				t.Errorf("%s\nfResolveRemoveTags(): -want err, +got err:\n%s", tc.reason, diff)
 			}
 		})

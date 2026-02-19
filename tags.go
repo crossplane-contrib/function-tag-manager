@@ -4,6 +4,8 @@ import (
 	"dario.cat/mergo"
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
 	"github.com/crossplane/function-sdk-go/resource"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 )
@@ -25,7 +27,7 @@ type TagUpdater struct {
 }
 
 // ResolveAddTags returns tags that will be Retained and Replaced.
-func (f *Function) ResolveAddTags(in []v1beta1.AddTag, oxr *resource.Composite) TagUpdater {
+func (f *Function) ResolveAddTags(in []v1beta1.AddTag, oxr *resource.Composite, env *unstructured.Unstructured) TagUpdater {
 	tu := TagUpdater{}
 
 	for _, at := range in {
@@ -38,6 +40,18 @@ func (f *Function) ResolveAddTags(in []v1beta1.AddTag, oxr *resource.Composite) 
 			err := fieldpath.Pave(oxr.Resource.Object).GetValueInto(*at.FromFieldPath, &tags)
 			if err != nil {
 				f.log.Debug("Unable to read tags from Composite field: ", *at.FromFieldPath, err)
+			}
+		case v1beta1.FromEnvironmentFieldPath:
+			fromMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(env)
+			if err != nil {
+				f.log.Debug("Unable to convert Environment field to unstructured map: ", *at.FromFieldPath, err)
+				continue
+			}
+
+			err = fieldpath.Pave(fromMap).GetValueInto(*at.FromFieldPath, &tags)
+			if err != nil {
+				f.log.Debug("Unable to read tags from Environment field: ", *at.FromFieldPath, err)
+				continue
 			}
 		}
 
@@ -73,7 +87,7 @@ func MergeTags(desired *resource.DesiredComposed, tu TagUpdater) error {
 }
 
 // ResolveIgnoreTags returns tags that are populated from observed resources.
-func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed) *TagUpdater {
+func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed, env *unstructured.Unstructured) *TagUpdater {
 	tu := &TagUpdater{}
 
 	if observed == nil {
@@ -101,6 +115,18 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 			if err != nil {
 				f.log.Debug("Unable to read tags from Composite field: ", *at.FromFieldPath, err)
 			}
+		case v1beta1.FromEnvironmentFieldPath:
+			fromMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(env)
+			if err != nil {
+				f.log.Debug("Unable to convert Environment field to unstructured map: ", *at.FromFieldPath, err)
+				continue
+			}
+
+			err = fieldpath.Pave(fromMap).GetValueInto(*at.FromFieldPath, &keys)
+			if err != nil {
+				f.log.Debug("Unable to read tags from Environment field: ", *at.FromFieldPath, err)
+				continue
+			}
 		}
 
 		for _, k := range keys {
@@ -126,24 +152,34 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 }
 
 // ResolveRemoveTags resolves the list of tag keys that will be removed.
-func (f *Function) ResolveRemoveTags(in []v1beta1.RemoveTag, oxr *resource.Composite) []string {
+func (f *Function) ResolveRemoveTags(in []v1beta1.RemoveTag, oxr *resource.Composite, env *unstructured.Unstructured) []string {
 	tagKeys := make([]string, 0)
+	tags := make([]string, 0)
 
 	for _, at := range in {
 		switch t := at.GetType(); t {
 		case v1beta1.FromValue:
 			tagKeys = append(tagKeys, at.Keys...)
 		case v1beta1.FromCompositeFieldPath: // resolve fields
-			tags := make([]string, 0)
-
 			err := fieldpath.Pave(oxr.Resource.Object).GetValueInto(*at.FromFieldPath, &tags)
 			if err != nil {
 				f.log.Debug("Unable to read tags from Composite field: ", *at.FromFieldPath, err)
 			}
 
-			tagKeys = append(tagKeys, tags...)
+		case v1beta1.FromEnvironmentFieldPath:
+			fromMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(env)
+			if err != nil {
+				f.log.Debug("Unable convert Environment field: ", *at.FromFieldPath, err)
+			}
+
+			err = fieldpath.Pave(fromMap).GetValueInto(*at.FromFieldPath, &tags)
+			if err != nil {
+				f.log.Debug("Unable to read tags from Environment field: ", *at.FromFieldPath, err)
+			}
 		}
 	}
+
+	tagKeys = append(tagKeys, tags...)
 
 	return tagKeys
 }

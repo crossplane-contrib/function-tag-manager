@@ -76,6 +76,8 @@ The `FromValue` type indicates that `tags` will be defined in the function input
 
 The `FromCompositeField` type indicates that the tags will be imported from the Composite Resource manifest.
 
+The `FromEnvironmentFieldPath` type indicates that the tags will be imported from the [Environment](https://docs.crossplane.io/latest/composition/environment-configs/).
+
 ```yaml
    addTags:
     - type: FromValue
@@ -89,6 +91,8 @@ The `FromCompositeField` type indicates that the tags will be imported from the 
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.optionalTags
       policy: Retain
+    - type: FromEnvironmentFieldPath
+      fromFieldPath: tags
 ```
 
 ### IgnoreTags
@@ -101,7 +105,7 @@ There are many Cloud management systems that set tags on Resources. By adding th
 to those tags in the `ignoreTags` section, the function will populate the Desired state with
 the values of the Observed tags for each key defined.
 
-Tag keys to ignore can be defined in `FromValue` or set in the Composite/Claim using `FromCompositeFieldPath`.
+Tag keys to ignore can be defined in `FromValue`, in the Composite/Claim using `FromCompositeFieldPath` or from EnvironmentConfig using `FromEnvironmentFieldPath`
 
 ```yaml
 ignoreTags:
@@ -116,6 +120,8 @@ ignoreTags:
 - type: FromCompositeFieldPath
   fromFieldPath: spec.parameters.ignoreTagKeysRetain
   policy: Retain
+- type: FromEnvironmentFieldPath
+  fromFieldPath: ignoreTags
 ```
 
 Another option for allowing external systems to manage tags is to use the [`initProvider`](https://docs.crossplane.io/latest/concepts/managed-resources/#initprovider) field of a Managed Resource.
@@ -132,6 +138,8 @@ The function can remove tags defined in the desired state by specifying
     - fromValue2
   - type: FromCompositeFieldPath
     fromFieldPath: spec.parameters.removeTags
+  - type: FromEnvironmentFieldPath
+    fromFieldPath: removeTags
 ```
 
 ## Tag Policies

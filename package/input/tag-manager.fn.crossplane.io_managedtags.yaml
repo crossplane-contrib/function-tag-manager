@@ -54,6 +54,7 @@ spec:
                   enum:
                   - FromCompositeFieldPath
                   - FromValue
+                  - FromEnvironmentFieldPath
                   type: string
               type: object
             type: array
@@ -97,6 +98,7 @@ spec:
                   enum:
                   - FromCompositeFieldPath
                   - FromValue
+                  - FromEnvironmentFieldPath
                   type: string
               required:
               - type
@@ -135,6 +137,7 @@ spec:
                   enum:
                   - FromCompositeFieldPath
                   - FromValue
+                  - FromEnvironmentFieldPath
                   type: string
               required:
               - type
