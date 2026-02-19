@@ -86,7 +86,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		desired.Resource.GetObjectKind()
 
 		if IgnoreResource(desired) {
-			f.log.Debug("skipping resource due to label", string(name), desired.Resource.GroupVersionKind().String())
+			f.log.Debug("skipping resource due to ignore annotation or label", string(name), desired.Resource.GroupVersionKind().String())
 			continue
 		}
 
@@ -132,12 +132,22 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	return rsp, nil
 }
 
-// IgnoreResource whether this resource has a label set to ignore.
+// IgnoreResource whether this resource has a label or annotation set to ignore.
+// If the annotation is present, it takes precedence over the label.
 func IgnoreResource(dc *resource.DesiredComposed) bool {
 	if dc == nil {
 		return true
 	}
 
+	annotations := dc.Resource.GetAnnotations()
+
+	// Check annotation first - if present, it takes precedence
+	aval, ok := annotations[IgnoreResourceAnnotation]
+	if ok {
+		return strings.EqualFold(aval, "true")
+	}
+
+	// Fall back to label for backward compatibility
 	var labels map[string]any
 
 	err := fieldpath.Pave(dc.Resource.Object).GetValueInto("metadata.labels", &labels)
@@ -151,4 +161,5 @@ func IgnoreResource(dc *resource.DesiredComposed) bool {
 	}
 
 	return false
+
 }

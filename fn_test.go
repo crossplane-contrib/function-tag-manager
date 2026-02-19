@@ -177,8 +177,8 @@ func TestIgnoreResource(t *testing.T) {
 			args:   args{},
 			want:   true,
 		},
-		"ResourceWithoutLabels": {
-			reason: "A resource without Labels returns false",
+		"ResourceWithoutLabelOrAnnotation": {
+			reason: "A resource without Annotation or Label set to true returns false",
 			args: args{
 				res: &resource.DesiredComposed{
 					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
@@ -194,7 +194,7 @@ func TestIgnoreResource(t *testing.T) {
 			},
 			want: false,
 		},
-		"ResourceWithLabelTrue": {
+		"ResourceWithAnnotationTrue": {
 			reason: "A resource with Label set to true returns true",
 			args: args{
 				res: &resource.DesiredComposed{
@@ -205,8 +205,8 @@ func TestIgnoreResource(t *testing.T) {
 								"kind":       "TagManager",
 								"metadata": map[string]any{
 									"name": "test-resource",
-									"labels": map[string]any{
-										IgnoreResourceLabel: "True",
+									"annotations": map[string]any{
+										IgnoreResourceAnnotation: "True",
 									},
 								},
 							},
@@ -226,8 +226,8 @@ func TestIgnoreResource(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "trUe",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "trUe",
 								},
 							},
 						},
@@ -246,6 +246,46 @@ func TestIgnoreResource(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
+								},
+							},
+						},
+					}},
+				},
+			},
+			want: false,
+		},
+		"ResourceWithLabelOnlyTrue": {
+			reason: "A resource with only the label (no annotation) set to true should still be ignored for backward compatibility",
+			args: args{
+				res: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"labels": map[string]any{
+									IgnoreResourceLabel: "True",
+								},
+							},
+						},
+					}},
+				},
+			},
+			want: true,
+		},
+		"ResourceWithLabelOnlyFalse": {
+			reason: "A resource with only the label set to false returns false",
+			args: args{
+				res: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
 								"labels": map[string]any{
 									IgnoreResourceLabel: "False",
 								},
@@ -255,6 +295,75 @@ func TestIgnoreResource(t *testing.T) {
 				},
 			},
 			want: false,
+		},
+		"AnnotationTakesPrecedenceOverLabel_BothTrue": {
+			reason: "When both annotation and label are present and set to true, annotation takes precedence (should ignore)",
+			args: args{
+				res: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "True",
+								},
+								"labels": map[string]any{
+									IgnoreResourceLabel: "True",
+								},
+							},
+						},
+					}},
+				},
+			},
+			want: true,
+		},
+		"AnnotationTakesPrecedenceOverLabel_AnnotationFalseLabelTrue": {
+			reason: "When annotation is false but label is true, annotation takes precedence (should NOT ignore)",
+			args: args{
+				res: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
+								},
+								"labels": map[string]any{
+									IgnoreResourceLabel: "True",
+								},
+							},
+						},
+					}},
+				},
+			},
+			want: false,
+		},
+		"AnnotationTakesPrecedenceOverLabel_AnnotationTrueLabelFalse": {
+			reason: "When annotation is true but label is false, annotation takes precedence (should ignore)",
+			args: args{
+				res: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "TagManager",
+							"metadata": map[string]any{
+								"name": "test-resource",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "True",
+								},
+								"labels": map[string]any{
+									IgnoreResourceLabel: "False",
+								},
+							},
+						},
+					}},
+				},
+			},
+			want: true,
 		},
 	}
 

@@ -151,16 +151,18 @@ When Merging tags, a `Policy` can be set:
 
 ## Skipping Resources Manually
 
-This function will skip any resource with the `tag-manager.fn.crossplane.io/ignore-resource` Kubernetes label set to `True` or `true`:
+This function will skip any resource with the `tag-manager.fn.crossplane.io/ignore-resource` Kubernetes annotation set to `True` or `true`:
 
 ```yaml
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: InternetGateway
 metadata:
-  labels:
+  annotations:
     tag-manager.fn.crossplane.io/ignore-resource: "True"
   name: my-igw
 ```
+
+**Note:** Versions v0.7.0 and earlier of the function used a label instead of the annotation to skip a resource. For backward compatibility, the label `tag-manager.fn.crossplane.io/ignore-resource` is still supported. However, if both the annotation and label are present, the annotation takes precedence. Using annotations is the recommended approach as it follows Kubernetes best practices.
 
 ## Filtering Resources
 

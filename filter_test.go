@@ -30,8 +30,8 @@ func TestSupportedManagedResource(t *testing.T) {
 						Object: map[string]any{
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
@@ -57,7 +57,7 @@ func TestSupportedManagedResource(t *testing.T) {
 							"metadata": map[string]any{
 								"name": "test-resource",
 								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{

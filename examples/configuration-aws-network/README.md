@@ -26,13 +26,15 @@ The [xrd](xrd.yaml) has been updated with the following fields:
 
 ## Skipping Resources
 
-Applying the following label to a resource will cause the function to skip managing tags on that resource:
+Applying the following annotation to a resource will cause the function to skip managing tags on that resource:
 
 ```yaml
 metadata:
-  labels:
-     tag-manager.crossplane.io/ignore-resource: true
+  annotations:
+     tag-manager.fn.crossplane.io/ignore-resource: "true"
 ```
+
+**Note:** For backward compatibility, the label `tag-manager.fn.crossplane.io/ignore-resource` is still supported, but annotations are recommended.
 
 ## Observed Resources
 

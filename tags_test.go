@@ -106,8 +106,8 @@ func TestResolveAddTags(t *testing.T) {
 						"kind":       "XR",
 						"metadata": map[string]any{
 							"name": "test-resource",
-							"labels": map[string]any{
-								IgnoreResourceLabel: "False",
+							"annotations": map[string]any{
+								IgnoreResourceAnnotation: "False",
 							},
 						},
 						"spec": map[string]any{
@@ -202,8 +202,8 @@ func TestAddTags(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 						},
@@ -222,8 +222,8 @@ func TestAddTags(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
@@ -300,8 +300,8 @@ func TestResolveIgnoreTags(t *testing.T) {
 							"kind":       "ManagedResource",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"status": map[string]any{
@@ -368,8 +368,8 @@ func TestResolveIgnoreTags(t *testing.T) {
 							"kind":       "ManagedResource",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"status": map[string]any{
@@ -427,8 +427,8 @@ func TestResolveIgnoreTags(t *testing.T) {
 							"kind":       "ManagedResource",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"status": map[string]any{
@@ -556,8 +556,8 @@ func TestResolveRemoveTags(t *testing.T) {
 						"kind":       "XR",
 						"metadata": map[string]any{
 							"name": "test-resource",
-							"labels": map[string]any{
-								IgnoreResourceLabel: "False",
+							"annotations": map[string]any{
+								IgnoreResourceAnnotation: "False",
 							},
 						},
 						"spec": map[string]any{
@@ -635,8 +635,8 @@ func TestRemoveTags(t *testing.T) {
 								"kind":       "TagManager",
 								"metadata": map[string]any{
 									"name": "test-resource",
-									"labels": map[string]any{
-										IgnoreResourceLabel: "False",
+									"annotations": map[string]any{
+										IgnoreResourceAnnotation: "False",
 									},
 								},
 								"spec": map[string]any{
@@ -658,8 +658,8 @@ func TestRemoveTags(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
@@ -684,8 +684,8 @@ func TestRemoveTags(t *testing.T) {
 								"kind":       "TagManager",
 								"metadata": map[string]any{
 									"name": "test-resource",
-									"labels": map[string]any{
-										IgnoreResourceLabel: "False",
+									"annotations": map[string]any{
+										IgnoreResourceAnnotation: "False",
 									},
 								},
 								"spec": map[string]any{
@@ -711,8 +711,8 @@ func TestRemoveTags(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
@@ -738,8 +738,8 @@ func TestRemoveTags(t *testing.T) {
 								"kind":       "TagManager",
 								"metadata": map[string]any{
 									"name": "test-resource",
-									"labels": map[string]any{
-										IgnoreResourceLabel: "False",
+									"annotations": map[string]any{
+										IgnoreResourceAnnotation: "False",
 									},
 								},
 								"spec": map[string]any{
@@ -766,8 +766,8 @@ func TestRemoveTags(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"labels": map[string]any{
-									IgnoreResourceLabel: "False",
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
