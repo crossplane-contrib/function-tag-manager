@@ -56,11 +56,8 @@ func TestSupportedManagedResource(t *testing.T) {
 							"kind":       "TagManager",
 							"metadata": map[string]any{
 								"name": "test-resource",
-								"metadata": map[string]any{
-									"name": "test-resource",
-									"annotations": map[string]any{
-										IgnoreResourceAnnotation: "False",
-									},
+								"annotations": map[string]any{
+									IgnoreResourceAnnotation: "False",
 								},
 							},
 							"spec": map[string]any{
