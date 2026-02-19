@@ -236,8 +236,8 @@ func TestIgnoreResource(t *testing.T) {
 			},
 			want: true,
 		},
-		"ResourceWithLabelFalse": {
-			reason: "A resource with label set to not true returns false",
+		"ResourceWithAnnotationFalse": {
+			reason: "A resource with the annotation set to not true returns false",
 			args: args{
 				res: &resource.DesiredComposed{
 					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
