@@ -10,13 +10,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 )
 
-// IgnoreCrossplaneTags tags added by Crossplane automatically
-// TODO: implement
-// var IgnoreCrossplaneTags = []string{"crossplane-kind", "crossplane-name", "crossplane-providerconfig"}
-
-// IgnoreResourceLabel set this label to `True` or `true` to disable
+// IgnoreResourceAnnotation set this annotation to `True` or `true` to disable
 // this function from managing the resource's tags.
-const IgnoreResourceLabel = "tag-manager.fn.crossplane.io/ignore-resource"
+const IgnoreResourceAnnotation = "tag-manager.fn.crossplane.io/ignore-resource"
+
+// IgnoreResourceLabel supports earlier versions of the function that used
+// a label to skip processing of a single resource. Use the annotation instead.
+// If both the label and annotation are present, the annotation takes precedence.
+const IgnoreResourceLabel = IgnoreResourceAnnotation
 
 // TagUpdater contains tags that are to be updated on a Desired Composed Resource.
 type TagUpdater struct {
