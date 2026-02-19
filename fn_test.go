@@ -216,8 +216,8 @@ func TestIgnoreResource(t *testing.T) {
 			},
 			want: true,
 		},
-		"ResourceWithLabelTrueMixedCase": {
-			reason: "Label value should support mixed case",
+		"ResourceWithAnnotationTrueMixedCase": {
+			reason: "Annotation value should support mixed case",
 			args: args{
 				res: &resource.DesiredComposed{
 					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{

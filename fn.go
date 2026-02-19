@@ -161,5 +161,4 @@ func IgnoreResource(dc *resource.DesiredComposed) bool {
 	}
 
 	return false
-
 }
