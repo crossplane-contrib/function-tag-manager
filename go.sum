@@ -63,8 +63,8 @@ github.com/go-git/go-billy/v6 v6.0.0-20260209124918-37866f83c2d3 h1:UU7oARtwQ5g8
 github.com/go-git/go-billy/v6 v6.0.0-20260209124918-37866f83c2d3/go.mod h1:ZW9JC5gionMP1kv5uiaOaV23q0FFmNrVOV8VW+y/acc=
 github.com/go-git/go-git-fixtures/v5 v5.1.2-0.20260122163445-0622d7459a67 h1:3hutPZF+/FBjR/9MdsLJ7e1mlt9pwHgwxMW7CrbmWII=
 github.com/go-git/go-git-fixtures/v5 v5.1.2-0.20260122163445-0622d7459a67/go.mod h1:xKt0pNHST9tYHvbiLxSY27CQWFwgIxBJuDrOE0JvbZw=
-github.com/go-git/go-git/v6 v6.0.0-20260217223433-8b943fe3eb84 h1:othGW1oe05mT24bsLUJWwf9kOaHlmvlAfBrHX1Br6mc=
-github.com/go-git/go-git/v6 v6.0.0-20260217223433-8b943fe3eb84/go.mod h1:B88nWzfnhTlIikoJ4d84Nc9noKS5mJoA7SgDdkt0aPU=
+github.com/go-git/go-git/v6 v6.0.0-20260220113129-c02711164eb8 h1:+d5lkyJxzoOgoTZsBMtfEPvubbdh3pHoUZh0o0IkR1g=
+github.com/go-git/go-git/v6 v6.0.0-20260220113129-c02711164eb8/go.mod h1:B88nWzfnhTlIikoJ4d84Nc9noKS5mJoA7SgDdkt0aPU=
 github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e h1:Lf/gRkoycfOBPa42vU2bbgPurFong6zXeFtPoxholzU=
 github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e/go.mod h1:uNVvRXArCGbZ508SxYYTC5v1JWoz2voff5pm25jU1Ok=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
