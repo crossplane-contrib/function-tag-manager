@@ -26,6 +26,6 @@ metadata:
   name: crossplane-contrib-function-tag-manager
   # Uncomment this annotation for local development using `go run . --insecure --debug` at the root directory
   # annotations:
-   # render.crossplane.io/runtime: Development
+  #   render.crossplane.io/runtime: Development
 spec:
   package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.8.0

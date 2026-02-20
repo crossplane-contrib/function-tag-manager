@@ -332,7 +332,7 @@ spec:
       functionRef:
         name: crossplane-contrib-function-tag-manager
       input:
-        apiVersion: tag-manger.fn.crossplane.io/v1beta1
+        apiVersion: tag-manager.fn.crossplane.io/v1beta1
         kind: ManagedTags
         addTags:
           - type: FromValue
