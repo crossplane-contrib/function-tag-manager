@@ -1,0 +1,108 @@
+apiVersion: ec2.aws.m.upbound.io/v1beta1
+kind: VPC
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: vpc
+    crossplane.io/external-create-pending: "2025-11-12T14:07:15Z"
+    crossplane.io/external-create-succeeded: "2025-11-12T14:07:15Z"
+    crossplane.io/external-name: vpc-0e7338c7029100471
+  creationTimestamp: "2025-11-12T14:07:14Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 3
+  labels:
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+  name: configuration-aws-network-1b95946a5b6b
+  namespace: default
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Network
+    name: configuration-aws-network
+    uid: 283a30f0-fd42-4766-97a8-ac28d501d056
+  resourceVersion: "626043"
+  uid: 2f1733e4-000c-4e35-957b-6677dedcaa47
+spec:
+  forProvider:
+    cidrBlock: 192.168.0.0/16
+    enableDnsHostnames: true
+    enableDnsSupport: true
+    instanceTenancy: default
+    region: us-west-2
+    tags:
+      Name: configuration-aws-network
+      crossplane-kind: vpc.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-1b95946a5b6b
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    kind: ProviderConfig
+    name: default
+status:
+  atProvider:
+    arn: arn:aws:ec2:us-west-2:609897127049:vpc/vpc-0e7338c7029100471
+    assignGeneratedIpv6CidrBlock: false
+    cidrBlock: 192.168.0.0/16
+    defaultNetworkAclId: acl-04da6b80b3623ef57
+    defaultRouteTableId: rtb-06b2e56bbb21409c5
+    defaultSecurityGroupId: sg-0f62fdf29fda1887f
+    dhcpOptionsId: dopt-037cbc88bae6bb04c
+    enableDnsHostnames: true
+    enableDnsSupport: true
+    enableNetworkAddressUsageMetrics: false
+    id: vpc-0e7338c7029100471
+    instanceTenancy: default
+    ipv6AssociationId: ""
+    ipv6CidrBlock: ""
+    ipv6CidrBlockNetworkBorderGroup: ""
+    ipv6IpamPoolId: ""
+    ipv6NetmaskLength: 0
+    mainRouteTableId: rtb-06b2e56bbb21409c5
+    ownerId: "609897127049"
+    region: us-west-2
+    tags:
+      Name: configuration-aws-network
+      crossplane-kind: vpc.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-1b95946a5b6b
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+      external-tag-1: test
+      external-tag-2: test-2
+    tagsAll:
+      Name: configuration-aws-network
+      crossplane-kind: vpc.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-1b95946a5b6b
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+  conditions:
+  - lastTransitionTime: "2025-11-12T14:07:37Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-11-12T14:17:32Z"
+    observedGeneration: 3
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2025-11-12T14:07:30Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
