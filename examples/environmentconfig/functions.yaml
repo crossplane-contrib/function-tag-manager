@@ -1,10 +1,17 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: crossplane-contrib-function-environment-configs
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/function-environment-configs:v0.6.0
 
+---
 apiVersion: pkg.crossplane.io/v1
 kind: Function
 metadata:
   name: crossplane-contrib-function-go-templating
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-go-templating:v0.9.2
+  package: xpkg.upbound.io/crossplane-contrib/function-go-templating:v0.11.3
 ---
 apiVersion: pkg.crossplane.io/v1
 kind: Function
@@ -19,6 +26,6 @@ metadata:
   name: crossplane-contrib-function-tag-manager
   # Uncomment this annotation for local development using `go run . --insecure --debug` at the root directory
   # annotations:
-  #  render.crossplane.io/runtime: Development
+   # render.crossplane.io/runtime: Development
 spec:
   package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.8.0

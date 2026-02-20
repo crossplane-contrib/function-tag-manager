@@ -1,0 +1,118 @@
+apiVersion: ec2.aws.m.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: subnet-us-west-2b-public
+    crossplane.io/external-create-pending: "2025-11-12T14:07:43Z"
+    crossplane.io/external-create-succeeded: "2025-11-12T14:07:43Z"
+    crossplane.io/external-name: subnet-0eda68fa3618e7996
+  creationTimestamp: "2025-11-12T14:07:14Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generateName: configuration-aws-network-
+  generation: 4
+  labels:
+    access: public
+    crossplane.io/composite: configuration-aws-network
+    networks.aws.platform.upbound.io/network-id: configuration-aws-network
+    zone: us-west-2b
+  name: configuration-aws-network-600dcf320477
+  namespace: default
+  ownerReferences:
+  - apiVersion: aws.platform.upbound.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Network
+    name: configuration-aws-network
+    uid: 283a30f0-fd42-4766-97a8-ac28d501d056
+  resourceVersion: "626084"
+  uid: 77eb5f81-9a66-423c-a0d2-6b9b58e28bb6
+spec:
+  forProvider:
+    availabilityZone: us-west-2b
+    cidrBlock: 192.168.64.0/18
+    mapPublicIpOnLaunch: true
+    privateDnsHostnameTypeOnLaunch: ip-name
+    region: us-west-2
+    tags:
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-600dcf320477
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      kubernetes.io/role/elb: "1"
+      networks.aws.platform.upbound.io/network-id: configuration-aws-network
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
+    vpcIdRef:
+      name: configuration-aws-network-1b95946a5b6b
+      namespace: default
+    vpcIdSelector:
+      matchControllerRef: true
+  initProvider: {}
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    kind: ProviderConfig
+    name: default
+status:
+  atProvider:
+    arn: arn:aws:ec2:us-west-2:609897127049:subnet/subnet-0eda68fa3618e7996
+    assignIpv6AddressOnCreation: false
+    availabilityZone: us-west-2b
+    availabilityZoneId: usw2-az2
+    cidrBlock: 192.168.64.0/18
+    customerOwnedIpv4Pool: ""
+    enableDns64: false
+    enableLniAtDeviceIndex: 0
+    enableResourceNameDnsARecordOnLaunch: false
+    enableResourceNameDnsAaaaRecordOnLaunch: false
+    id: subnet-0eda68fa3618e7996
+    ipv6CidrBlock: ""
+    ipv6CidrBlockAssociationId: ""
+    ipv6Native: false
+    mapCustomerOwnedIpOnLaunch: false
+    mapPublicIpOnLaunch: true
+    outpostArn: ""
+    ownerId: "609897127049"
+    privateDnsHostnameTypeOnLaunch: ip-name
+    region: us-west-2
+    tags:
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-600dcf320477
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      kubernetes.io/role/elb: "1"
+      networks.aws.platform.upbound.io/network-id: configuration-aws-network
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    tagsAll:
+      crossplane-kind: subnet.ec2.aws.m.upbound.io
+      crossplane-name: configuration-aws-network-600dcf320477
+      crossplane-providerconfig: default
+      fromValue: tagFromValue
+      kubernetes.io/role/elb: "1"
+      networks.aws.platform.upbound.io/network-id: configuration-aws-network
+      replaceFromXR: value1
+      replaceFromXR2: value2
+      retainFromXR: optional1
+      retainFromXR2: optional2
+    vpcId: vpc-0e7338c7029100471
+  conditions:
+  - lastTransitionTime: "2025-11-12T14:17:43Z"
+    observedGeneration: 4
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2025-11-12T14:08:03Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-11-12T14:07:59Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
