@@ -18,7 +18,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 )
 
-// Function returns whatever response you ask it to.
+// Function manages tags on composed resources based on configuration rules.
 type Function struct {
 	fnv1.FunctionRunnerServiceServer
 
@@ -82,22 +82,23 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	resourceFilter := filters.NewResourceFilter()
 
-	for name, desired := range desiredComposed {
-		desired.Resource.GetObjectKind()
+	// Resolve tags to remove once for all resources (doesn't depend on individual resources)
+	removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr, env)
 
+	for name, desired := range desiredComposed {
 		if IgnoreResource(desired) {
-			f.log.Debug("skipping resource due to ignore annotation or label", string(name), desired.Resource.GroupVersionKind().String())
+			f.log.Debug("skipping resource due to ignore annotation or label", "resource", string(name), "gvk", desired.Resource.GroupVersionKind().String())
 			continue
 		}
 
 		if !SupportedManagedResource(desired, resourceFilter) {
-			f.log.Debug("skipping resource that doesn't support tags", string(name), desired.Resource.GroupVersionKind().String())
+			f.log.Debug("skipping resource that doesn't support tags", "resource", string(name), "gvk", desired.Resource.GroupVersionKind().String())
 			continue
 		}
 
 		err := MergeTags(desired, additionalTags)
 		if err != nil {
-			f.log.Debug("error adding tags", string(name), err.Error())
+			f.log.Debug("error adding tags", "resource", string(name), "error", err.Error())
 		}
 
 		// Ignore tags only if there is an existing Composed resource with tags in the status
@@ -106,17 +107,16 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			if ignoreTags != nil {
 				err := MergeTags(desired, *ignoreTags)
 				if err != nil {
-					f.log.Debug("error adding tags to ignore", string(name), err.Error())
+					f.log.Debug("error adding tags to ignore", "resource", string(name), "error", err.Error())
 				}
 			}
 		}
 
-		removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr, env)
 		// Remove tags
 		if len(removeTags) > 0 {
 			err := RemoveTags(desired, removeTags)
 			if err != nil {
-				f.log.Debug("error removing tags", string(name), err.Error())
+				f.log.Debug("error removing tags", "resource", string(name), "error", err.Error())
 			}
 		}
 	}
