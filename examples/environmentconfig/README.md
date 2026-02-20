@@ -42,4 +42,4 @@ metadata:
 
 ## Observed Resources
 
-In the [observed-resource](observed-resources) directory are resources that have had additional tags added for testing.
+In the [observed-resources](observed-resources) directory are resources that have had additional tags added for testing.
