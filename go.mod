@@ -11,8 +11,8 @@ require (
 	github.com/go-git/go-git/v6 v6.0.0-20260220113129-c02711164eb8
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.11
-	k8s.io/apiextensions-apiserver v0.35.1
-	k8s.io/apimachinery v0.35.1
+	k8s.io/apiextensions-apiserver v0.35.2
+	k8s.io/apimachinery v0.35.2
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -96,9 +96,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.35.1 // indirect
-	k8s.io/client-go v0.35.1 // indirect
-	k8s.io/code-generator v0.35.1 // indirect
+	k8s.io/api v0.35.2 // indirect
+	k8s.io/client-go v0.35.2 // indirect
+	k8s.io/code-generator v0.35.2 // indirect
 	k8s.io/gengo/v2 v2.0.0-20251215205346-5ee0d033ba5b // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20260127142750-a19766b6e2d4 // indirect
