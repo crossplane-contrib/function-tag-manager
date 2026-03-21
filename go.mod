@@ -8,7 +8,7 @@ require (
 	github.com/crossplane/crossplane-runtime/v2 v2.2.0
 	github.com/crossplane/function-sdk-go v0.6.1
 	github.com/go-git/go-billy/v6 v6.0.0-20260226131633-45bd0956d66f
-	github.com/go-git/go-git/v6 v6.0.0-20260227233803-efde8c49a5e2
+	github.com/go-git/go-git/v6 v6.0.0-20260320111621-ea91339c5263
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.11
 	k8s.io/apiextensions-apiserver v0.35.3
