@@ -6,7 +6,7 @@ require (
 	dario.cat/mergo v1.0.2
 	github.com/alecthomas/kong v1.14.0
 	github.com/crossplane/crossplane-runtime/v2 v2.2.0
-	github.com/crossplane/function-sdk-go v0.6.1
+	github.com/crossplane/function-sdk-go v0.6.2
 	github.com/go-git/go-billy/v6 v6.0.0-20260226131633-45bd0956d66f
 	github.com/go-git/go-git/v6 v6.0.0-20260320111621-ea91339c5263
 	github.com/google/go-cmp v0.7.0
