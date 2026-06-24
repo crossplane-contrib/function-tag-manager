@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
@@ -11,6 +12,7 @@ import (
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/errors"
@@ -23,13 +25,14 @@ type Function struct {
 	fnv1.FunctionRunnerServiceServer
 
 	log logging.Logger
+	ttl time.Duration
 }
 
 // RunFunction runs the Function.
-func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
+func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) { //nolint:gocognit // complexity is 32, just over limit of 30
 	f.log.Info("Running Function", "tag-manager", req.GetMeta().GetTag())
 
-	rsp := response.To(req, response.DefaultTTL)
+	rsp := response.To(req, f.ttl)
 
 	in := &v1beta1.ManagedTags{}
 
@@ -37,6 +40,16 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	if err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get Function input from %T", req))
 		return rsp, nil
+	}
+
+	if in.TTL != "" {
+		dur, err := time.ParseDuration(in.TTL)
+		if err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot set ttl"))
+			return rsp, nil
+		}
+
+		rsp.Meta.Ttl = durationpb.New(dur)
 	}
 
 	oxr, err := request.GetObservedCompositeResource(req)
