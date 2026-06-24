@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"testing"
+	"time"
 
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/resource"
@@ -146,7 +147,7 @@ func TestRunFunction(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			f := &Function{log: logging.NewNopLogger()}
+			f := &Function{log: logging.NewNopLogger(), ttl: response.DefaultTTL}
 			rsp, err := f.RunFunction(tc.args.ctx, tc.args.req)
 
 			if diff := cmp.Diff(tc.want.rsp, rsp,
@@ -159,6 +160,27 @@ func TestRunFunction(t *testing.T) {
 				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
 			}
 		})
+	}
+}
+
+func TestRunFunctionCacheTTL(t *testing.T) {
+	f := &Function{log: logging.NewNopLogger(), ttl: response.DefaultTTL}
+
+	rsp, err := f.RunFunction(context.Background(), &fnv1.RunFunctionRequest{
+		Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+		Input: resource.MustStructJSON(`{
+			"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+			"kind": "ManagedTags",
+			"ttl": "5m"
+		}`),
+	})
+	if err != nil {
+		t.Fatalf("RunFunction(...): unexpected error: %v", err)
+	}
+
+	want := durationpb.New(5 * time.Minute)
+	if diff := cmp.Diff(want, rsp.GetMeta().GetTtl(), protocmp.Transform()); diff != "" {
+		t.Errorf("RunFunction(...): -want ttl, +got ttl:\n%s", diff)
 	}
 }
 
