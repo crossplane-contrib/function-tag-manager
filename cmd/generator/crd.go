@@ -15,6 +15,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/errors"
 )
 
+const (
+	fieldForProvider = "forProvider"
+	fieldSpec        = "spec"
+	fieldTags        = "tags"
+)
+
 // ExamineFieldFromCRDVersions walks a directory of CRDs and
 // determines if a field exists.
 func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.FilterList, error) {
@@ -62,7 +68,7 @@ func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.Filter
 			// Look for the field at fieldpath "spec.forProvider.tags"
 			if schema != nil && schema.OpenAPIV3Schema != nil {
 				key := crd.Spec.Group + "/" + crd.Spec.Names.Kind
-				hasField := checkFieldPath(schema.OpenAPIV3Schema, []string{"spec", "forProvider", "tags"})
+				hasField := checkFieldPath(schema.OpenAPIV3Schema, []string{fieldSpec, fieldForProvider, fieldTags})
 				filter = append(filter, render.Filter{GroupKind: key, Enabled: hasField})
 			}
 		}
