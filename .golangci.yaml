@@ -13,6 +13,7 @@ linters:
     - funlen
     - gocyclo
     - godox
+    - gomodguard
     - ireturn
     - lll
     - maintidx
@@ -92,6 +93,7 @@ linters:
           - gochecknoglobals
           - gochecknoinits
           - gocognit
+          - goconst
           - gosec
           - scopelint
           - unparam

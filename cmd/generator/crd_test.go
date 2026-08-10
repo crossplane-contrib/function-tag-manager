@@ -30,7 +30,7 @@ func TestCheckFieldPath(t *testing.T) {
 			reason: "Should return false for nil schema",
 			args: args{
 				schema: nil,
-				path:   []string{"spec", "forProvider", "tags"},
+				path:   []string{fieldSpec, fieldForProvider, fieldTags},
 			},
 			want: want{
 				result: false,
@@ -41,7 +41,7 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {},
+						fieldSpec: {},
 					},
 				},
 				path: []string{},
@@ -56,7 +56,7 @@ func TestCheckFieldPath(t *testing.T) {
 				schema: &extv1.JSONSchemaProps{
 					Properties: nil,
 				},
-				path: []string{"spec"},
+				path: []string{fieldSpec},
 			},
 			want: want{
 				result: false,
@@ -67,10 +67,10 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {Type: "object"},
+						fieldSpec: {Type: "object"},
 					},
 				},
-				path: []string{"spec"},
+				path: []string{fieldSpec},
 			},
 			want: want{
 				result: true,
@@ -81,7 +81,7 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {},
+						fieldSpec: {},
 					},
 				},
 				path: []string{"status"},
@@ -95,18 +95,18 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {
+						fieldSpec: {
 							Properties: map[string]extv1.JSONSchemaProps{
-								"forProvider": {
+								fieldForProvider: {
 									Properties: map[string]extv1.JSONSchemaProps{
-										"tags": {Type: "object"},
+										fieldTags: {Type: "object"},
 									},
 								},
 							},
 						},
 					},
 				},
-				path: []string{"spec", "forProvider", "tags"},
+				path: []string{fieldSpec, fieldForProvider, fieldTags},
 			},
 			want: want{
 				result: true,
@@ -117,14 +117,14 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {
+						fieldSpec: {
 							Properties: map[string]extv1.JSONSchemaProps{
-								"forProvider": {},
+								fieldForProvider: {},
 							},
 						},
 					},
 				},
-				path: []string{"spec", "forProvider", "tags"},
+				path: []string{fieldSpec, fieldForProvider, fieldTags},
 			},
 			want: want{
 				result: false,
@@ -138,7 +138,7 @@ func TestCheckFieldPath(t *testing.T) {
 						"status": {},
 					},
 				},
-				path: []string{"spec", "forProvider", "tags"},
+				path: []string{fieldSpec, fieldForProvider, fieldTags},
 			},
 			want: want{
 				result: false,
@@ -149,14 +149,14 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {
+						fieldSpec: {
 							Properties: map[string]extv1.JSONSchemaProps{
 								"initProvider": {},
 							},
 						},
 					},
 				},
-				path: []string{"spec", "forProvider", "tags"},
+				path: []string{fieldSpec, fieldForProvider, fieldTags},
 			},
 			want: want{
 				result: false,
@@ -167,15 +167,15 @@ func TestCheckFieldPath(t *testing.T) {
 			args: args{
 				schema: &extv1.JSONSchemaProps{
 					Properties: map[string]extv1.JSONSchemaProps{
-						"spec": {
+						fieldSpec: {
 							Properties: map[string]extv1.JSONSchemaProps{
-								"forProvider": {
+								fieldForProvider: {
 									Properties: map[string]extv1.JSONSchemaProps{
 										"config": {
 											Properties: map[string]extv1.JSONSchemaProps{
 												"settings": {
 													Properties: map[string]extv1.JSONSchemaProps{
-														"tags": {Type: "object"},
+														fieldTags: {Type: "object"},
 													},
 												},
 											},
@@ -186,7 +186,7 @@ func TestCheckFieldPath(t *testing.T) {
 						},
 					},
 				},
-				path: []string{"spec", "forProvider", "config", "settings", "tags"},
+				path: []string{fieldSpec, fieldForProvider, "config", "settings", fieldTags},
 			},
 			want: want{
 				result: true,
