@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/kong v1.16.1
 	github.com/crossplane/crossplane-runtime/v2 v2.3.3
 	github.com/crossplane/function-sdk-go v0.7.1
-	github.com/go-git/go-billy/v6 v6.0.0-20260226131633-45bd0956d66f
+	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
 	github.com/go-git/go-git/v6 v6.0.0-20260320111621-ea91339c5263
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.12
@@ -24,7 +24,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/crossplane/crossplane/apis/v2 v2.3.4 // indirect
-	github.com/cyphar/filepath-securejoin v0.6.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
