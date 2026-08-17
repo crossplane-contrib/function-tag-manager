@@ -25,7 +25,7 @@ kind: Function
 metadata:
   name: crossplane-contrib-function-tag-manager
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.8.1
+  package: xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.9.0
 ```
 
 ## Using this Function in a Composition
@@ -168,19 +168,29 @@ metadata:
 
 This function supports both AWS and Azure resources that allow setting of tags.
 
+Counts below are per resource kind. Starting with the 2.x providers both Cluster-scoped and
+Namespace-scoped resources are supported, so each kind has two Custom Resource Definitions
+(for example `ec2.aws.upbound.io/Instance` and `ec2.aws.m.upbound.io/Instance`) and two entries
+in the generated filter.
+
 ### AWS Resources
 
-A scan of the AWS provider shows that 498 resources support tags and 477 do not. Starting with the 2.x provider both Cluster
-and Namespace-scoped resources are supported, so for each resource there are two Custom Resource Definitions.
+A scan of the v2.7.0 AWS provider shows that 539 resource kinds support tags and 493 do not.
 
 The AWS Provider CRDs were scanned using [`cmd/generator/main.go`](cmd/generator/main.go) to generate the list in [filters/zz_provider-upjet-aws.go](filters/zz_provider-upjet-aws.go).
 
 ### Azure Resources
 
-A scan of the Azure provider shows that 550 resources support tags and 927 do not. Both Cluster-scoped (`azure.upbound.io`)
-and Namespace-scoped (`azure.m.upbound.io`) API groups are supported.
+A scan of the v2.7.0 Azure provider shows that 294 resource kinds support tags and 475 do not. Both
+Cluster-scoped (`azure.upbound.io`) and Namespace-scoped (`azure.m.upbound.io`) API groups are supported.
 
 The Azure Provider CRDs were scanned using the same generator to create the list in [filters/zz_provider-upjet-azure.go](filters/zz_provider-upjet-azure.go).
+
+**Note:** As of v0.9.0 the filters are generated from provider v2.7.0 CRDs, and a small number of
+resources are newly classified as taggable. If you manage `cloudfront/Function`,
+`ec2/VPCIpamPoolCidrAllocation`, or `cognitiveservices/AccountRaiBlocklist`, upgrade the AWS or
+Azure provider to at least v2.7.0 — older providers will reject the tags field with a Kubernetes
+API validation error.
 
 ### Regenerating Filters
 
@@ -201,14 +211,14 @@ $ go generate ./...
 
 # Run tests
 $ go test -cover ./...
-ok      github.com/crossplane-contrib/function-tag-manager      0.542s  coverage: 68.6% of statements
-ok      github.com/crossplane-contrib/function-tag-manager/cmd/generator        1.035s  coverage: 43.2% of statements
+ok      github.com/crossplane-contrib/function-tag-manager      0.535s  coverage: 66.9% of statements
+ok      github.com/crossplane-contrib/function-tag-manager/cmd/generator        1.012s  coverage: 44.3% of statements
         github.com/crossplane-contrib/function-tag-manager/cmd/generator/render         coverage: 0.0% of statements
         github.com/crossplane-contrib/function-tag-manager/filters              coverage: 0.0% of statements
         github.com/crossplane-contrib/function-tag-manager/input/v1beta1                coverage: 0.0% of statements
 
 # Lint the code
-$ docker run --rm -v $(pwd):/app -v ~/.cache/golangci-lint/v2.6.1:/root/.cache -w /app golangci/golangci-lint:v2.6.1 golangci-lint run
+$ docker run --rm -v $(pwd):/app -v ~/.cache/golangci-lint/v2.12.2:/root/.cache -w /app golangci/golangci-lint:v2.12.2 golangci-lint run
 0 issues.
 
 # Build a Docker image - see Dockerfile
@@ -250,5 +260,5 @@ crossplane xpkg build -f package --embed-runtime-image=function-tag-manager -o f
 I use the `up` binary to push to the [Upbound Marketplace](https://marketplace.upbound.io)
 
 ```shell
-up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.8.1 -f function-tag-manager.xpkg
+up xpkg push xpkg.upbound.io/crossplane-contrib/function-tag-manager:v0.9.0 -f function-tag-manager.xpkg
 ```
