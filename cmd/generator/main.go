@@ -89,7 +89,7 @@ func (c *CLI) Run() error {
 			return err
 		}
 
-		bf = w.Filesystem
+		bf = w.Filesystem()
 
 		log.Debug("git clone complete")
 	} else {
