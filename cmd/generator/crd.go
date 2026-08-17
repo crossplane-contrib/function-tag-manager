@@ -4,6 +4,7 @@ package main
 import (
 	"io/fs"
 	"path/filepath"
+	"sort"
 
 	"github.com/crossplane-contrib/function-tag-manager/cmd/generator/render"
 	"github.com/go-git/go-billy/v6"
@@ -74,6 +75,10 @@ func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.Filter
 		}
 
 		return nil
+	})
+
+	sort.Slice(filter, func(i, j int) bool {
+		return filter[i].GroupKind < filter[j].GroupKind
 	})
 
 	return filter, err
