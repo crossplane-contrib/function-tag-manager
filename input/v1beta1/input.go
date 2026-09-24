@@ -31,6 +31,10 @@ type ManagedTags struct {
 	// IgnoreTags is a list of tag keys to remove from the resource.
 	// +optional
 	RemoveTags RemoveTags `json:"removeTags,omitempty"`
+
+	// TTL for which a response can be cached in time.Duration format
+	// +optional
+	TTL string `json:"ttl,omitempty"`
 }
 
 // Tags contains a map tags.
