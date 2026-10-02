@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/kong v1.16.1
 	github.com/crossplane/crossplane-runtime/v2 v2.4.2
 	github.com/crossplane/function-sdk-go v0.7.1
-	github.com/go-git/go-billy/v6 v6.0.0-alpha.2
+	github.com/go-git/go-billy/v6 v6.0.0-beta.1
 	github.com/go-git/go-git/v6 v6.0.0-alpha.5
 	github.com/google/go-cmp v0.7.0
 	google.golang.org/protobuf v1.36.12
