@@ -6,7 +6,6 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/crossplane/function-sdk-go"
-	"github.com/crossplane/function-sdk-go/response"
 )
 
 // CLI of this Function.
@@ -28,12 +27,7 @@ func (c *CLI) Run() error {
 		return err
 	}
 
-	ttl := response.DefaultTTL
-	if c.TTL != nil {
-		ttl = *c.TTL
-	}
-
-	return function.Serve(&Function{log: log, ttl: ttl},
+	return function.Serve(&Function{log: log, ttl: *c.TTL},
 		function.Listen(c.Network, c.Address),
 		function.MTLSCertificates(c.TLSCertsDir),
 		function.Insecure(c.Insecure),

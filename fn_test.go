@@ -164,23 +164,113 @@ func TestRunFunction(t *testing.T) {
 }
 
 func TestRunFunctionCacheTTL(t *testing.T) {
-	f := &Function{log: logging.NewNopLogger(), ttl: response.DefaultTTL}
-
-	rsp, err := f.RunFunction(context.Background(), &fnv1.RunFunctionRequest{
-		Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
-		Input: resource.MustStructJSON(`{
-			"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
-			"kind": "ManagedTags",
-			"ttl": "5m"
-		}`),
-	})
-	if err != nil {
-		t.Fatalf("RunFunction(...): unexpected error: %v", err)
+	type args struct {
+		ctx context.Context
+		req *fnv1.RunFunctionRequest
 	}
 
-	want := durationpb.New(5 * time.Minute)
-	if diff := cmp.Diff(want, rsp.GetMeta().GetTtl(), protocmp.Transform()); diff != "" {
-		t.Errorf("RunFunction(...): -want ttl, +got ttl:\n%s", diff)
+	type want struct {
+		rsp *fnv1.RunFunctionResponse
+		err error
+	}
+
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"CustomTTL": {
+			reason: "The Function should use the TTL supplied in the input",
+			args: args{
+				req: &fnv1.RunFunctionRequest{
+					Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+					Input: resource.MustStructJSON(`{
+						"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+						"kind": "ManagedTags",
+						"ttl": "5m"
+					}`),
+				},
+			},
+			want: want{
+				rsp: &fnv1.RunFunctionResponse{
+					Desired: &fnv1.State{},
+					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(5 * time.Minute)},
+					Results: []*fnv1.Result{
+						{
+							Severity: fnv1.Severity_SEVERITY_NORMAL,
+							Message:  "Successfully Processed tags",
+							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
+						},
+					},
+				},
+			},
+		},
+		"ZeroTTL": {
+			reason: "The Function should accept a TTL of zero",
+			args: args{
+				req: &fnv1.RunFunctionRequest{
+					Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+					Input: resource.MustStructJSON(`{
+						"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+						"kind": "ManagedTags",
+						"ttl": "0s"
+					}`),
+				},
+			},
+			want: want{
+				rsp: &fnv1.RunFunctionResponse{
+					Desired: &fnv1.State{},
+					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(0)},
+					Results: []*fnv1.Result{
+						{
+							Severity: fnv1.Severity_SEVERITY_NORMAL,
+							Message:  "Successfully Processed tags",
+							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
+						},
+					},
+				},
+			},
+		},
+		"NegativeTTL": {
+			reason: "The Function should return a fatal result when the TTL is negative",
+			args: args{
+				req: &fnv1.RunFunctionRequest{
+					Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+					Input: resource.MustStructJSON(`{
+						"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+						"kind": "ManagedTags",
+						"ttl": "-1s"
+					}`),
+				},
+			},
+			want: want{
+				rsp: &fnv1.RunFunctionResponse{
+					Meta: &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(response.DefaultTTL)},
+					Results: []*fnv1.Result{
+						{
+							Severity: fnv1.Severity_SEVERITY_FATAL,
+							Message:  "ttl duration cannot be negative",
+							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := &Function{log: logging.NewNopLogger(), ttl: response.DefaultTTL}
+			rsp, err := f.RunFunction(tc.args.ctx, tc.args.req)
+
+			if diff := cmp.Diff(tc.want.rsp, rsp, protocmp.Transform()); diff != "" {
+				t.Errorf("%s\nf.RunFunction(...): -want rsp, +got rsp:\n%s", tc.reason, diff)
+			}
+
+			if diff := cmp.Diff(tc.want.err, err, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
+			}
+		})
 	}
 }
 

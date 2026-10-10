@@ -49,6 +49,11 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			return rsp, nil
 		}
 
+		if dur < 0 {
+			response.Fatal(rsp, errors.New("ttl duration cannot be negative"))
+			return rsp, nil
+		}
+
 		rsp.Meta.Ttl = durationpb.New(dur)
 	}
 

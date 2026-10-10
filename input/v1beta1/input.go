@@ -67,7 +67,7 @@ type AddTag struct {
 	// Type determines where tags are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches tags from a field in
 	// the composite resource
-	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue;FromEnvironmentFieldPath
 	// +optional
 	Type TagManagerType `json:"type,omitempty"`
 
