@@ -203,6 +203,10 @@ go generate ./...
 
 This will clone the provider repositories, scan their CRDs, and regenerate the filter files.
 
+The generator looks for the `spec.forProvider.tags` field by default. Use the `--field` flag to scan
+for a different field when a provider doesn't call it `tags`; the field name is written to the
+generated filter so the function knows which field to manage for that provider's resources.
+
 ## Developing this Function
 
 ```shell

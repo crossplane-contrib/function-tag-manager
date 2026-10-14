@@ -246,7 +246,7 @@ func TestAddTags(t *testing.T) {
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := MergeTags(tc.args.desired, tc.args.tu)
+			err := MergeTags(tc.args.desired, tc.args.tu, "tags")
 
 			if diff := cmp.Diff(tc.want.desired, tc.args.desired); diff != "" {
 				t.Errorf("%s\nfAddTags(): -want err, +got err:\n%s", tc.reason, diff)
@@ -472,7 +472,7 @@ func TestResolveIgnoreTags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			tu := f.ResolveIgnoreTags(tc.args.in, tc.args.oxr, tc.args.observed, tc.args.env)
+			tu := f.ResolveIgnoreTags(tc.args.in, tc.args.oxr, tc.args.observed, tc.args.env, "tags")
 
 			if diff := cmp.Diff(tc.want.tu, tu); diff != "" {
 				t.Errorf("%s\nfResolveAddTags(): -want err, +got err:\n%s", tc.reason, diff)
@@ -787,7 +787,7 @@ func TestRemoveTags(t *testing.T) {
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := RemoveTags(tc.args.desired, tc.args.keys)
+			err := RemoveTags(tc.args.desired, tc.args.keys, "tags")
 
 			if diff := cmp.Diff(tc.want.desired, tc.args.desired); diff != "" {
 				t.Errorf("%s\nfAddTags(): -want err, +got err:\n%s", tc.reason, diff)
@@ -797,5 +797,92 @@ func TestRemoveTags(t *testing.T) {
 				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
 			}
 		})
+	}
+}
+
+func TestCustomField(t *testing.T) {
+	const field = "labels"
+
+	f := &Function{log: logging.NewNopLogger()}
+
+	desired := &resource.DesiredComposed{
+		Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+			Object: map[string]any{
+				"apiVersion": "example.crossplane.io/v1",
+				"kind":       "ManagedResource",
+				"metadata": map[string]any{
+					"name": "test-resource",
+				},
+				"spec": map[string]any{
+					"forProvider": map[string]any{
+						"labels": map[string]any{
+							"existing": "label",
+							"remove":   "me",
+						},
+					},
+				},
+			},
+		}},
+	}
+
+	observed := &resource.ObservedComposed{
+		Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+			Object: map[string]any{
+				"apiVersion": "example.crossplane.io/v1",
+				"kind":       "ManagedResource",
+				"metadata": map[string]any{
+					"name": "test-resource",
+				},
+				"status": map[string]any{
+					"atProvider": map[string]any{
+						"labels": map[string]any{
+							"ignored": "fromObserved",
+						},
+						"tags": map[string]any{
+							"ignored": "notALabel",
+						},
+					},
+				},
+			},
+		}},
+	}
+
+	wantTU := &TagUpdater{Replace: v1beta1.Tags{"ignored": "fromObserved"}}
+
+	tu := f.ResolveIgnoreTags([]v1beta1.IgnoreTag{{Type: v1beta1.FromValue, Keys: []string{"ignored"}}}, &resource.Composite{}, observed, nil, field)
+	if diff := cmp.Diff(wantTU, tu); diff != "" {
+		t.Errorf("ResolveIgnoreTags(): -want, +got:\n%s", diff)
+	}
+
+	err := MergeTags(desired, TagUpdater{Replace: v1beta1.Tags{"added": "label"}}, field)
+	if err != nil {
+		t.Errorf("MergeTags(): unexpected error: %v", err)
+	}
+
+	err = MergeTags(desired, *tu, field)
+	if err != nil {
+		t.Errorf("MergeTags(): unexpected error: %v", err)
+	}
+
+	err = RemoveTags(desired, []string{"remove"}, field)
+	if err != nil {
+		t.Errorf("RemoveTags(): unexpected error: %v", err)
+	}
+
+	want := map[string]any{
+		"spec": map[string]any{
+			"forProvider": map[string]any{
+				"labels": map[string]any{
+					"existing": "label",
+					"added":    "label",
+					"ignored":  "fromObserved",
+				},
+			},
+		},
+	}
+
+	got := map[string]any{"spec": desired.Resource.Object["spec"]}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("spec.forProvider: -want, +got:\n%s", diff)
 	}
 }

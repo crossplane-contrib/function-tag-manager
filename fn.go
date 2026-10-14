@@ -91,21 +91,22 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			continue
 		}
 
-		if !SupportedManagedResource(desired, resourceFilter) {
+		field, ok := ManagedField(desired, resourceFilter)
+		if !ok {
 			f.log.Debug("skipping resource that doesn't support tags", "resource", string(name), "gvk", desired.Resource.GroupVersionKind().String())
 			continue
 		}
 
-		err := MergeTags(desired, additionalTags)
+		err := MergeTags(desired, additionalTags, field)
 		if err != nil {
 			f.log.Debug("error adding tags", "resource", string(name), "error", err.Error())
 		}
 
 		// Ignore tags only if there is an existing Composed resource with tags in the status
 		if observed, ok := observedComposed[name]; ok {
-			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed, env)
+			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed, env, field)
 			if ignoreTags != nil {
-				err := MergeTags(desired, *ignoreTags)
+				err := MergeTags(desired, *ignoreTags, field)
 				if err != nil {
 					f.log.Debug("error adding tags to ignore", "resource", string(name), "error", err.Error())
 				}
@@ -114,7 +115,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 		// Remove tags
 		if len(removeTags) > 0 {
-			err := RemoveTags(desired, removeTags)
+			err := RemoveTags(desired, removeTags, field)
 			if err != nil {
 				f.log.Debug("error removing tags", "resource", string(name), "error", err.Error())
 			}
