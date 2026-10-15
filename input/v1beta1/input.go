@@ -93,7 +93,7 @@ type IgnoreTag struct {
 	// Type determines where tag keys are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches keys from a field in
 	// the composite resource
-	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue;FromEnvironmentFieldPath
 	Type TagManagerType `json:"type"`
 
 	// FromFieldPath if type is FromCompositeFieldPath, get keys to ignore
@@ -118,7 +118,7 @@ type RemoveTag struct {
 	// Type determines where tag keys are sourced from. FromValue are inline
 	// to the composition. FromCompositeFieldPath fetches keys from a field in
 	// the composite resource
-	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue
+	// +kubebuilder:validation:Enum=FromCompositeFieldPath;FromValue;FromEnvironmentFieldPath
 	Type TagManagerType `json:"type"`
 
 	// FromFieldPath if type is FromCompositeFieldPath, get keys to remove
