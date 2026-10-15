@@ -11,49 +11,44 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-filters-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.26.5'
+
 jobs:
   regenerate:
-    # Only run for Renovate PRs; a manual edit to versions.env should
-    # regenerate too, so any PR touching the file qualifies.
-    runs-on: ubuntu-24.04
+    # Pull requests from forks get a read-only token and can't be pushed to,
+    # so only run for branches in this repository, such as Renovate's.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          persist-credentials: true
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d3605764df25a5ab39f7422fecc64b5 # v5.4.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version-file: go.mod
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Regenerate filters from pinned provider versions
+        run: ./filters/generate.sh
+
+      # Pushes made with GITHUB_TOKEN don't trigger the CI workflow, so build
+      # and test the regenerated filters here before pushing them.
+      - name: Build and test
         run: |
-          set -e
-          source filters/versions.env
-          rm -rf _work
-          pushd filters > /dev/null
-          go run ../cmd/generator/. --debug \
-            --output-file=zz_provider-upjet-aws.go \
-            --repository-dir=../_work/providers/provider-upjet-aws \
-            --repo-url=https://github.com/crossplane-contrib/provider-upjet-aws.git \
-            --template-file=../templates/aws.tmpl \
-            --git-branch-origin-main="refs/tags/${UPJET_AWS_VERSION}"
-          go run ../cmd/generator/. --debug \
-            --output-file=zz_provider-upjet-azure.go \
-            --repository-dir=../_work/providers/provider-upjet-azure \
-            --repo-url=https://github.com/crossplane-contrib/provider-upjet-azure.git \
-            --template-file=../templates/azure.tmpl \
-            --git-branch-origin-main="refs/tags/${UPJET_AZURE_VERSION}"
-          go fmt ./...
-          popd > /dev/null
+          go build ./...
+          go test ./...
 
       - name: Commit regenerated filters
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add filters/zz_provider-upjet-aws.go filters/zz_provider-upjet-azure.go
           if git diff --cached --quiet; then
             echo "Filters unchanged; nothing to commit."

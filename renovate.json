@@ -8,22 +8,24 @@
     "gomodTidy",
     "gomodUpdateImportPaths"
   ],
-  "regexManagers": [
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "customManagers": [
     {
+      "customType": "regex",
       "description": "Update the provider version pins used to generate resource filters.",
-      "fileMatch": ["^filters/versions\\.env$"],
+      "managerFilePatterns": ["/^filters/versions\\.env$/"],
       "matchStrings": [
-        "renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n\\S+=(?<currentValue>\\S+)"
+        "renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\S+=(?<currentValue>\\S+)"
       ],
-      "versioning": "loose"
+      "versioningTemplate": "semver"
     }
   ],
   "packageRules": [
     {
-      "description": "Open the filter pin updates as two separate PRs.",
+      "description": "Label the filter pin updates.",
       "matchFileNames": ["filters/versions.env"],
-      "separateMajorMinor": false,
-      "commitMessageSuffix": "",
       "labels": ["filters"]
     }
   ]
