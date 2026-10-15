@@ -26,6 +26,7 @@ type CLI struct {
 	RepositoryDir           string `help:"local git repository cache" default:"_work/providers/provider-upjet-aws"`
 	RepoURL                 string `help:"Git repo to clone" default:"https://github.com/crossplane-contrib/provider-upjet-aws.git"`
 	CrossplanePackageCRDDir string `help:"Location of CRD files" default:"package/crds"`
+	Field                   string `help:"Name of the spec.forProvider field that holds tags" default:"tags"`
 	OutputFile              string `help:"file to output generated Go code"`
 	GitBranchOriginMain     string `help:"Git branch to clone." default:"refs/remotes/origin/main"`
 	TemplateFile            string `help:"Go Text Template to use to render filters" default:"templates/aws.tmpl"`
@@ -100,7 +101,7 @@ func (c *CLI) Run() error {
 
 	log.Debug("examining CRD files", "directory", c.CrossplanePackageCRDDir)
 
-	filter, err := ExamineFieldFromCRDVersions(bf, g.CRDDir)
+	filter, err := ExamineFieldFromCRDVersions(bf, g.CRDDir, c.Field)
 	if err != nil {
 		return err
 	}
@@ -119,7 +120,7 @@ func (c *CLI) Run() error {
 
 	log.Debug("rendering template", "location", out.Name())
 
-	return render.Render(out, filter, c.TemplateFile)
+	return render.Render(out, c.Field, filter, c.TemplateFile)
 }
 
 func main() {

@@ -19,12 +19,11 @@ import (
 const (
 	fieldForProvider = "forProvider"
 	fieldSpec        = "spec"
-	fieldTags        = "tags"
 )
 
 // ExamineFieldFromCRDVersions walks a directory of CRDs and
-// determines if a field exists.
-func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.FilterList, error) {
+// determines if a field exists in spec.forProvider.
+func ExamineFieldFromCRDVersions(f billy.Filesystem, root, field string) (render.FilterList, error) {
 	filter := render.FilterList{}
 	err := util.Walk(f, root, func(path string, info fs.FileInfo, e error) error {
 		if e != nil {
@@ -66,10 +65,10 @@ func ExamineFieldFromCRDVersions(f billy.Filesystem, root string) (render.Filter
 			}
 
 			schema := storedVersion.Schema
-			// Look for the field at fieldpath "spec.forProvider.tags"
+			// Look for the field at fieldpath "spec.forProvider.<field>"
 			if schema != nil && schema.OpenAPIV3Schema != nil {
 				key := crd.Spec.Group + "/" + crd.Spec.Names.Kind
-				hasField := checkFieldPath(schema.OpenAPIV3Schema, []string{fieldSpec, fieldForProvider, fieldTags})
+				hasField := checkFieldPath(schema.OpenAPIV3Schema, []string{fieldSpec, fieldForProvider, field})
 				filter = append(filter, render.Filter{GroupKind: key, Enabled: hasField})
 			}
 		}
