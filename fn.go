@@ -29,7 +29,7 @@ type Function struct {
 }
 
 // RunFunction runs the Function.
-func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) { //nolint:gocognit // complexity is 32, just over limit of 30
+func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
 	f.log.Info("Running Function", "tag-manager", req.GetMeta().GetTag())
 
 	rsp := response.To(req, f.ttl)
@@ -42,20 +42,13 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	if in.TTL != "" {
-		dur, err := time.ParseDuration(in.TTL)
-		if err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot set ttl"))
-			return rsp, nil
-		}
-
-		if dur < 0 {
-			response.Fatal(rsp, errors.New("ttl duration cannot be negative"))
-			return rsp, nil
-		}
-
-		rsp.Meta.Ttl = durationpb.New(dur)
+	ttl, err := resolveTTL(in.TTL, f.ttl)
+	if err != nil {
+		response.Fatal(rsp, err)
+		return rsp, nil
 	}
+
+	rsp.Meta.Ttl = durationpb.New(ttl)
 
 	oxr, err := request.GetObservedCompositeResource(req)
 	if err != nil {
@@ -148,6 +141,25 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	response.Normalf(rsp, "Successfully Processed tags")
 
 	return rsp, nil
+}
+
+// resolveTTL returns the TTL set in the Function input, or def if the input
+// doesn't set one. The input TTL is a Go duration string such as "5m".
+func resolveTTL(ttl string, def time.Duration) (time.Duration, error) {
+	if ttl == "" {
+		return def, nil
+	}
+
+	dur, err := time.ParseDuration(ttl)
+	if err != nil {
+		return 0, errors.Wrap(err, "cannot parse ttl")
+	}
+
+	if dur < 0 {
+		return 0, errors.New("ttl duration cannot be negative")
+	}
+
+	return dur, nil
 }
 
 // IgnoreResource whether this resource has a label or annotation set to ignore.

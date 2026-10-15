@@ -32,7 +32,9 @@ type ManagedTags struct {
 	// +optional
 	RemoveTags RemoveTags `json:"removeTags,omitempty"`
 
-	// TTL for which a response can be cached in time.Duration format
+	// TTL is how long Crossplane can cache this Function's response, as a Go
+	// duration string such as "30s" or "5m". "0s" disables caching. If unset,
+	// the Function's --ttl flag is used (default 1m).
 	// +optional
 	TTL string `json:"ttl,omitempty"`
 }

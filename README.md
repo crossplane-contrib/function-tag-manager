@@ -142,6 +142,39 @@ The function can remove tags defined in the desired state by specifying
     fromFieldPath: removeTags
 ```
 
+### TTL
+
+The function tells Crossplane how long it may cache the function's response.
+By default this is one minute. Set `ttl` in the input to change it for a
+Composition. The value is a Go duration string such as `30s` or `5m`, and
+`0s` disables caching. A negative or unparseable value returns a fatal result.
+
+```yaml
+  ttl: 5m
+```
+
+To change the default for every Composition, start the function with the
+`--ttl` flag. A `ttl` in the input overrides it.
+
+```yaml
+apiVersion: pkg.crossplane.io/v1beta1
+kind: DeploymentRuntimeConfig
+metadata:
+  name: function-tag-manager
+spec:
+  deploymentTemplate:
+    spec:
+      selector: {}
+      template:
+        spec:
+          containers:
+          - name: package-runtime
+            args:
+            - --ttl=5m
+```
+
+Reference it from the Function with `spec.runtimeConfigRef.name: function-tag-manager`.
+
 ## Tag Policies
 
 When Merging tags, a `Policy` can be set:
