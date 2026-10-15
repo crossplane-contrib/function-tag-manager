@@ -1,0 +1,63 @@
+name: Update Resource Filters
+
+# Renovate updates the provider version pins in filters/versions.env.
+# When a PR changes that file, regenerate the resource filters from the
+# pinned provider tags and push the result to the PR branch.
+on:
+  pull_request:
+    paths:
+      - filters/versions.env
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    # Only run for Renovate PRs; a manual edit to versions.env should
+    # regenerate too, so any PR touching the file qualifies.
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: true
+
+      - name: Setup Go
+        uses: actions/setup-go@f111f3307d3605764df25a5ab39f7422fecc64b5 # v5.4.0
+        with:
+          go-version-file: go.mod
+
+      - name: Regenerate filters from pinned provider versions
+        run: |
+          set -e
+          source filters/versions.env
+          rm -rf _work
+          pushd filters > /dev/null
+          go run ../cmd/generator/. --debug \
+            --output-file=zz_provider-upjet-aws.go \
+            --repository-dir=../_work/providers/provider-upjet-aws \
+            --repo-url=https://github.com/crossplane-contrib/provider-upjet-aws.git \
+            --template-file=../templates/aws.tmpl \
+            --git-branch-origin-main="refs/tags/${UPJET_AWS_VERSION}"
+          go run ../cmd/generator/. --debug \
+            --output-file=zz_provider-upjet-azure.go \
+            --repository-dir=../_work/providers/provider-upjet-azure \
+            --repo-url=https://github.com/crossplane-contrib/provider-upjet-azure.git \
+            --template-file=../templates/azure.tmpl \
+            --git-branch-origin-main="refs/tags/${UPJET_AZURE_VERSION}"
+          go fmt ./...
+          popd > /dev/null
+
+      - name: Commit regenerated filters
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add filters/zz_provider-upjet-aws.go filters/zz_provider-upjet-azure.go
+          if git diff --cached --quiet; then
+            echo "Filters unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -s -m "Regenerate resource filters from pinned provider versions"
+          git push

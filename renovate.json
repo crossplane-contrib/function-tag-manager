@@ -7,5 +7,24 @@
   "postUpdateOptions": [
     "gomodTidy",
     "gomodUpdateImportPaths"
+  ],
+  "regexManagers": [
+    {
+      "description": "Update the provider version pins used to generate resource filters.",
+      "fileMatch": ["^filters/versions\\.env$"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n\\S+=(?<currentValue>\\S+)"
+      ],
+      "versioning": "loose"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Open the filter pin updates as two separate PRs.",
+      "matchFileNames": ["filters/versions.env"],
+      "separateMajorMinor": false,
+      "commitMessageSuffix": "",
+      "labels": ["filters"]
+    }
   ]
 }
