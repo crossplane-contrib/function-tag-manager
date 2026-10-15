@@ -1,0 +1,58 @@
+name: Update Resource Filters
+
+# Renovate updates the provider version pins in filters/versions.env.
+# When a PR changes that file, regenerate the resource filters from the
+# pinned provider tags and push the result to the PR branch.
+on:
+  pull_request:
+    paths:
+      - filters/versions.env
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-filters-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.26.5'
+
+jobs:
+  regenerate:
+    # Pull requests from forks get a read-only token and can't be pushed to,
+    # so only run for branches in this repository, such as Renovate's.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Regenerate filters from pinned provider versions
+        run: ./filters/generate.sh
+
+      # Pushes made with GITHUB_TOKEN don't trigger the CI workflow, so build
+      # and test the regenerated filters here before pushing them.
+      - name: Build and test
+        run: |
+          go build ./...
+          go test ./...
+
+      - name: Commit regenerated filters
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add filters/zz_provider-upjet-aws.go filters/zz_provider-upjet-azure.go
+          if git diff --cached --quiet; then
+            echo "Filters unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -s -m "Regenerate resource filters from pinned provider versions"
+          git push

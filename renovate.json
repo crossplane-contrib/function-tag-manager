@@ -7,5 +7,26 @@
   "postUpdateOptions": [
     "gomodTidy",
     "gomodUpdateImportPaths"
+  ],
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update the provider version pins used to generate resource filters.",
+      "managerFilePatterns": ["/^filters/versions\\.env$/"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\S+=(?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Label the filter pin updates.",
+      "matchFileNames": ["filters/versions.env"],
+      "labels": ["filters"]
+    }
   ]
 }
