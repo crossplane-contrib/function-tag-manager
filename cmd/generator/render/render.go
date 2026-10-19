@@ -16,14 +16,22 @@ type Filter struct {
 // FilterList is a list of Filters.
 type FilterList []Filter
 
+// Data is passed to the template when rendering.
+type Data struct {
+	// Field is the name of the spec.forProvider field that was examined.
+	Field string
+	// Resources lists whether each resource has Field.
+	Resources []Filter
+}
+
 // Render renders resource.
-func Render(writer io.Writer, resources []Filter, templateFile string) error {
+func Render(writer io.Writer, field string, resources []Filter, templateFile string) error {
 	tmpl, err := template.New(filepath.Base(templateFile)).ParseFiles(templateFile)
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(writer, resources)
+	err = tmpl.Execute(writer, Data{Field: field, Resources: resources})
 	if err != nil {
 		return err
 	}
