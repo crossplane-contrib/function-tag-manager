@@ -20,6 +20,14 @@
         "renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\S+=(?<currentValue>\\S+)"
       ],
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Update the tool versions pinned in the CI workflow env.",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s*\\w+: '(?<currentValue>[^']+)'"
+      ]
     }
   ],
   "packageRules": [
