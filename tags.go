@@ -67,10 +67,13 @@ func (f *Function) ResolveAddTags(in []v1beta1.AddTag, oxr *resource.Composite, 
 }
 
 // MergeTags merges tags to a Desired Composed Resource.
-func MergeTags(desired *resource.DesiredComposed, tu TagUpdater) error {
+// The field is the name of the spec.forProvider field that holds tags.
+func MergeTags(desired *resource.DesiredComposed, tu TagUpdater, field string) error {
+	path := "spec.forProvider." + field
+
 	var desiredTags v1beta1.Tags
 
-	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider.tags", &desiredTags)
+	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto(path, &desiredTags)
 
 	err := mergo.Map(&desiredTags, tu.Retain)
 	if err != nil {
@@ -82,13 +85,14 @@ func MergeTags(desired *resource.DesiredComposed, tu TagUpdater) error {
 		return err
 	}
 
-	err = desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
+	err = desired.Resource.SetValue(path, desiredTags)
 
 	return err
 }
 
 // ResolveIgnoreTags returns tags that are populated from observed resources.
-func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed, env *unstructured.Unstructured) *TagUpdater {
+// The field is the name of the status.atProvider field that holds tags.
+func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed, env *unstructured.Unstructured, field string) *TagUpdater {
 	tu := &TagUpdater{}
 
 	if observed == nil {
@@ -97,7 +101,7 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 
 	var observedTags v1beta1.Tags
 
-	err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider.tags", &observedTags)
+	err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider."+field, &observedTags)
 	if err != nil {
 		f.log.Debug("unable to fetch tags from observed resource", observed.Resource.GetName(), observed.Resource.GroupVersionKind().String())
 		return nil
@@ -186,15 +190,18 @@ func (f *Function) ResolveRemoveTags(in []v1beta1.RemoveTag, oxr *resource.Compo
 }
 
 // RemoveTags removes tags from a desired composed resource based
-// on matching keys.
-func RemoveTags(desired *resource.DesiredComposed, keys []string) error {
+// on matching keys. The field is the name of the spec.forProvider field that
+// holds tags.
+func RemoveTags(desired *resource.DesiredComposed, keys []string, field string) error {
 	if len(keys) == 0 {
 		return nil
 	}
 
+	path := "spec.forProvider." + field
+
 	var desiredTags v1beta1.Tags
 
-	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto("spec.forProvider.tags", &desiredTags)
+	_ = fieldpath.Pave(desired.Resource.Object).GetValueInto(path, &desiredTags)
 
 	numTags := len(desiredTags)
 	for _, key := range keys {
@@ -202,7 +209,7 @@ func RemoveTags(desired *resource.DesiredComposed, keys []string) error {
 	}
 
 	if numTags > 0 {
-		return desired.Resource.SetValue("spec.forProvider.tags", desiredTags)
+		return desired.Resource.SetValue(path, desiredTags)
 	}
 
 	return nil

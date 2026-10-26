@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func TestSupportedManagedResource(t *testing.T) {
+func TestManagedField(t *testing.T) {
 	ResourceFilter := filters.NewResourceFilter()
 
 	type args struct {
@@ -21,6 +21,7 @@ func TestSupportedManagedResource(t *testing.T) {
 		reason string
 		args   args
 		want   bool
+		field  string
 	}{
 		"MalformedGroupKnd": {
 			reason: "Kubernetes GVK is invalid",
@@ -93,7 +94,27 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
+		},
+		"CustomField": {
+			reason: "Return the field configured for the resource's provider",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "Thing",
+							"metadata": map[string]any{
+								"name": "test-resource",
+							},
+						},
+					}},
+				},
+				filter: filters.ResourceFilter{"example.crossplane.io/Thing": "labels"},
+			},
+			want:  true,
+			field: "labels",
 		},
 		"KindExclude": {
 			reason: "Filter Kinds that don't support tags",
@@ -157,7 +178,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"NamespacedGroupExclude": {
 			reason: "Exclude resources with .m namespaced groups that don't support tags",
@@ -203,7 +225,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureResourceGroupInclude": {
 			reason: "Include Azure ResourceGroup that supports tags",
@@ -226,7 +249,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureNamespacedResourceGroupInclude": {
 			reason: "Include Azure ResourceGroup with .m namespaced group that supports tags",
@@ -249,7 +273,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureAutomationAccountInclude": {
 			reason: "Include Azure Automation Account that supports tags",
@@ -273,7 +298,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureNamespacedAutomationAccountInclude": {
 			reason: "Include Azure Automation Account with .m namespaced group that supports tags",
@@ -297,7 +323,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureAPIManagementAPIExclude": {
 			reason: "Exclude Azure API Management API that doesn't support tags",
@@ -366,7 +393,8 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 		"AzureAppConfigurationInclude": {
 			reason: "Include Azure App Configuration that supports tags",
@@ -390,13 +418,19 @@ func TestSupportedManagedResource(t *testing.T) {
 				},
 				filter: ResourceFilter,
 			},
-			want: true,
+			want:  true,
+			field: "tags",
 		},
 	}
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			if got := SupportedManagedResource(tt.args.desired, tt.args.filter); got != tt.want {
-				t.Errorf("SupportedManagedResource() = %v, want %v", got, tt.want)
+			field, got := ManagedField(tt.args.desired, tt.args.filter)
+			if got != tt.want {
+				t.Errorf("ManagedField() = %v, want %v", got, tt.want)
+			}
+
+			if field != tt.field {
+				t.Errorf("ManagedField() field = %q, want %q", field, tt.field)
 			}
 		})
 	}
