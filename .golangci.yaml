@@ -10,6 +10,7 @@ linters:
     - dupl
     - err113
     - exhaustruct
+    - exhaustruct_v5
     - funlen
     - gocyclo
     - godox

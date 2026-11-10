@@ -13,10 +13,13 @@ on:
         required: false
 
 env:
-  # Common versions
-  GO_VERSION: '1.26.5'
-  GOLANGCI_VERSION: 'v2.12.2'
-  DOCKER_BUILDX_VERSION: 'v0.29.1'
+  # Common versions. Renovate updates these via the annotations below.
+  # renovate: datasource=golang-version depName=go
+  GO_VERSION: '1.27.3'
+  # renovate: datasource=github-releases depName=golangci/golangci-lint
+  GOLANGCI_VERSION: 'v2.15.0'
+  # renovate: datasource=github-releases depName=docker/buildx
+  DOCKER_BUILDX_VERSION: 'v0.38.1'
 
   # These environment variables are important to the Crossplane CLI install.sh
   # script. They determine what version it installs.
@@ -120,7 +123,7 @@ jobs:
         run: ./crossplane xpkg build --package-file=${{ matrix.arch }}.xpkg --package-root=package/ --embed-runtime-image-tarball=runtime-${{ matrix.arch }}.tar
 
       - name: Upload Single-Platform Package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: package-${{ matrix.arch }}
           path: "*.xpkg"
@@ -139,7 +142,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Download Single-Platform Packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           path: .
           merge-multiple: true
@@ -149,7 +152,7 @@ jobs:
         run: "curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh"
 
       - name: Login to Upbound
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         if: env.XPKG_ACCESS_ID != ''
         with:
           registry: xpkg.upbound.io
@@ -169,7 +172,7 @@ jobs:
         run: "./crossplane --verbose xpkg push --package-files $(echo *.xpkg|tr ' ' ,) ${{ env.XPKG }}:${{ env.XPKG_VERSION }}"
 
       - name: Login to GHCR
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
