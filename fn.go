@@ -26,6 +26,16 @@ type Function struct {
 
 	log logging.Logger
 	ttl time.Duration
+	// filter determines which composed resources support tags, and which
+	// fields hold them. It's built once, rather than on every request.
+	filter filters.ResourceFilter
+}
+
+// NewFunction returns a Function that manages tags on the resources in the
+// built-in resource filter, and caches its responses for ttl unless the input
+// overrides it.
+func NewFunction(log logging.Logger, ttl time.Duration) *Function {
+	return &Function{log: log, ttl: ttl, filter: filters.NewResourceFilter()}
 }
 
 // RunFunction runs the Function.
@@ -91,8 +101,6 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	resourceFilter := filters.NewResourceFilter()
-
 	// Resolve tags to remove once for all resources (doesn't depend on individual resources)
 	removeTags := f.ResolveRemoveTags(in.RemoveTags, oxr, env)
 
@@ -102,21 +110,22 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			continue
 		}
 
-		if !SupportedManagedResource(desired, resourceFilter) {
+		fields, ok := ManagedField(desired, f.filter)
+		if !ok {
 			f.log.Debug("skipping resource that doesn't support tags", "resource", string(name), "gvk", desired.Resource.GroupVersionKind().String())
 			continue
 		}
 
-		err := MergeTags(desired, additionalTags)
+		err := MergeTags(desired, additionalTags, fields.Spec)
 		if err != nil {
 			f.log.Debug("error adding tags", "resource", string(name), "error", err.Error())
 		}
 
 		// Ignore tags only if there is an existing Composed resource with tags in the status
 		if observed, ok := observedComposed[name]; ok {
-			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed, env)
+			ignoreTags := f.ResolveIgnoreTags(in.IgnoreTags, oxr, &observed, env, fields.Observed)
 			if ignoreTags != nil {
-				err := MergeTags(desired, *ignoreTags)
+				err := MergeTags(desired, *ignoreTags, fields.Spec)
 				if err != nil {
 					f.log.Debug("error adding tags to ignore", "resource", string(name), "error", err.Error())
 				}
@@ -125,7 +134,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 		// Remove tags
 		if len(removeTags) > 0 {
-			err := RemoveTags(desired, removeTags)
+			err := RemoveTags(desired, removeTags, fields.Spec)
 			if err != nil {
 				f.log.Debug("error removing tags", "resource", string(name), "error", err.Error())
 			}

@@ -11,6 +11,8 @@ import (
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
+const fieldTags = "tags"
+
 func TestCheckFieldPath(t *testing.T) {
 	type args struct {
 		schema *extv1.JSONSchemaProps
@@ -385,8 +387,42 @@ spec:
                     type: array
 `
 
+	// CRD with labels field, and a tags field that isn't an object
+	crdWithLabels := `apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: buckets.storage.gcp.upbound.io
+spec:
+  group: storage.gcp.upbound.io
+  names:
+    kind: Bucket
+    plural: buckets
+  scope: Cluster
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              forProvider:
+                type: object
+                properties:
+                  labels:
+                    type: object
+                  tags:
+                    items:
+                      type: string
+                    type: array
+`
+
 	type testCase struct {
 		reason string
+		field  string
 		files  map[string]string
 		want   render.FilterList
 		errStr string
@@ -486,6 +522,26 @@ spec:
 				{GroupKind: "acmpca.aws.upbound.io/Certificate", Enabled: false},
 			},
 		},
+		"CustomField": {
+			reason: "Should look for the configured field instead of tags",
+			field:  "labels",
+			files: map[string]string{
+				"bucket.yaml": crdWithLabels,
+			},
+			want: render.FilterList{
+				{GroupKind: "storage.gcp.upbound.io/Bucket", Enabled: true},
+			},
+		},
+		"CustomFieldIgnoresTags": {
+			reason: "Should not match tags when looking for another field",
+			field:  "labels",
+			files: map[string]string{
+				"bucket.yaml": crdWithTags,
+			},
+			want: render.FilterList{
+				{GroupKind: "s3.aws.upbound.io/Bucket", Enabled: false},
+			},
+		},
 		"SingleCRDWithTagsIncorrectType": {
 			reason: "Should correctly identify CRD with tags field of incorrect type",
 			files: map[string]string{
@@ -518,8 +574,13 @@ spec:
 				}
 			}
 
+			field := tc.field
+			if field == "" {
+				field = fieldTags
+			}
+
 			// Run the function
-			got, err := ExamineFieldFromCRDVersions(fs, testRootDir)
+			got, err := ExamineFieldFromCRDVersions(fs, testRootDir, field)
 
 			// Check error
 			if tc.errStr != "" {

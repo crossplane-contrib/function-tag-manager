@@ -236,6 +236,17 @@ go generate ./...
 
 This will clone the provider repositories, scan their CRDs, and regenerate the filter files.
 
+The generator looks for the `spec.forProvider.tags` field by default. Use the `--field` flag to scan
+for a different field when a provider doesn't call it `tags`; the field name is written to the
+generated filter so the function knows which field to manage for that provider's resources.
+
+Some providers report the tags that exist on the external resource in a different field than the one
+they accept tags in. For example, Terraform-based GCP resources only list the labels you configured in
+`status.atProvider.labels`, and labels set outside Crossplane appear in `status.atProvider.effectiveLabels`.
+`ignoreTags` reads the existing tags from `status.atProvider`, so pass `--observed-field` (for example
+`--field=labels --observed-field=effectiveLabels`) to read them from that field instead. It defaults to
+the value of `--field`. Both flags must be a single field name, not a dotted path.
+
 ## Developing this Function
 
 ```shell
