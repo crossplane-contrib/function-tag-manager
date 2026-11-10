@@ -6,6 +6,7 @@ import (
 	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -22,6 +23,8 @@ func TestManagedField(t *testing.T) {
 		args   args
 		want   bool
 		field  string
+		// observed defaults to field.
+		observed string
 	}{
 		"MalformedGroupKnd": {
 			reason: "Kubernetes GVK is invalid",
@@ -111,10 +114,30 @@ func TestManagedField(t *testing.T) {
 						},
 					}},
 				},
-				filter: filters.ResourceFilter{"example.crossplane.io/Thing": "labels"},
+				filter: filters.ResourceFilter{"example.crossplane.io/Thing": {Spec: "labels", Observed: "labels"}},
 			},
 			want:  true,
 			field: "labels",
+		},
+		"DistinctObservedField": {
+			reason: "Return the observed field when it differs from the spec field",
+			args: args{
+				desired: &resource.DesiredComposed{
+					Resource: &composed.Unstructured{Unstructured: unstructured.Unstructured{
+						Object: map[string]any{
+							"apiVersion": "example.crossplane.io/v1",
+							"kind":       "Thing",
+							"metadata": map[string]any{
+								"name": "test-resource",
+							},
+						},
+					}},
+				},
+				filter: filters.ResourceFilter{"example.crossplane.io/Thing": {Spec: "labels", Observed: "effectiveLabels"}},
+			},
+			want:     true,
+			field:    "labels",
+			observed: "effectiveLabels",
 		},
 		"KindExclude": {
 			reason: "Filter Kinds that don't support tags",
@@ -424,13 +447,18 @@ func TestManagedField(t *testing.T) {
 	}
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			field, got := ManagedField(tt.args.desired, tt.args.filter)
+			fields, got := ManagedField(tt.args.desired, tt.args.filter)
 			if got != tt.want {
 				t.Errorf("ManagedField() = %v, want %v", got, tt.want)
 			}
 
-			if field != tt.field {
-				t.Errorf("ManagedField() field = %q, want %q", field, tt.field)
+			want := filters.TagFields{Spec: tt.field, Observed: tt.observed}
+			if tt.observed == "" {
+				want.Observed = tt.field
+			}
+
+			if diff := cmp.Diff(want, fields); diff != "" {
+				t.Errorf("ManagedField() fields: -want, +got:\n%s", diff)
 			}
 		})
 	}

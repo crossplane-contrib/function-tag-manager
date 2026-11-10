@@ -91,8 +91,11 @@ func MergeTags(desired *resource.DesiredComposed, tu TagUpdater, field string) e
 }
 
 // ResolveIgnoreTags returns tags that are populated from observed resources.
-// The field is the name of the status.atProvider field that holds tags.
-func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed, env *unstructured.Unstructured, field string) *TagUpdater {
+// The observedField is the name of the status.atProvider field that holds the
+// tags that exist on the external resource. It isn't necessarily the same as
+// the spec.forProvider field: some providers only report tags set outside
+// Crossplane in a separate field.
+func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Composite, observed *resource.ObservedComposed, env *unstructured.Unstructured, observedField string) *TagUpdater {
 	tu := &TagUpdater{}
 
 	if observed == nil {
@@ -101,7 +104,7 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 
 	var observedTags v1beta1.Tags
 
-	err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider."+field, &observedTags)
+	err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider."+observedField, &observedTags)
 	if err != nil {
 		f.log.Debug("unable to fetch tags from observed resource", observed.Resource.GetName(), observed.Resource.GroupVersionKind().String())
 		return nil

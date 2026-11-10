@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane-contrib/function-tag-manager/filters"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
@@ -146,7 +147,7 @@ func TestRunFunction(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			f := &Function{log: logging.NewNopLogger()}
+			f := NewFunction(logging.NewNopLogger())
 			rsp, err := f.RunFunction(tc.args.ctx, tc.args.req)
 
 			if diff := cmp.Diff(tc.want.rsp, rsp,
@@ -159,6 +160,102 @@ func TestRunFunction(t *testing.T) {
 				t.Errorf("%s\nf.RunFunction(...): -want err, +got err:\n%s", tc.reason, diff)
 			}
 		})
+	}
+}
+
+func TestRunFunctionFields(t *testing.T) {
+	// A filter for providers that don't call their tags field `tags`. The GCP
+	// resource also reports the tags that exist on the external resource,
+	// including those set outside Crossplane, in a different field.
+	f := &Function{
+		log: logging.NewNopLogger(),
+		filter: filters.ResourceFilter{
+			"storage.gcp.upbound.io/Bucket": {Spec: "labels", Observed: "effectiveLabels"},
+			"ec2.aws.upbound.io/VPC":        {Spec: "tags", Observed: "tags"},
+		},
+	}
+
+	req := &fnv1.RunFunctionRequest{
+		Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+		Input: resource.MustStructJSON(`{
+			"apiVersion": "tag-manger.fn.crossplane.io/v1beta1",
+			"kind": "ManagedTags",
+			"addTags": [{"type": "FromValue", "policy": "Replace", "tags": {"added": "tag"}}],
+			"ignoreTags": [{"type": "FromValue", "policy": "Replace", "keys": ["external"]}],
+			"removeTags": [{"type": "FromValue", "keys": ["remove"]}]
+		}`),
+		Observed: &fnv1.State{
+			Resources: map[string]*fnv1.Resource{
+				"bucket": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1",
+					"kind": "Bucket",
+					"status": {"atProvider": {
+						"labels": {"external": "notReported"},
+						"effectiveLabels": {"external": "fromObserved"}
+					}}
+				}`)},
+				"vpc": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "ec2.aws.upbound.io/v1beta1",
+					"kind": "VPC",
+					"status": {"atProvider": {"tags": {"external": "fromObserved"}}}
+				}`)},
+			},
+		},
+		Desired: &fnv1.State{
+			Resources: map[string]*fnv1.Resource{
+				"bucket": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1",
+					"kind": "Bucket",
+					"spec": {"forProvider": {"labels": {"existing": "label", "remove": "me"}}}
+				}`)},
+				"vpc": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "ec2.aws.upbound.io/v1beta1",
+					"kind": "VPC",
+					"spec": {"forProvider": {"tags": {"existing": "tag", "remove": "me"}}}
+				}`)},
+				"unsupported": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "example.crossplane.io/v1",
+					"kind": "Other",
+					"spec": {"forProvider": {"region": "us-east-1"}}
+				}`)},
+			},
+		},
+	}
+
+	rsp, err := f.RunFunction(context.Background(), req)
+	if err != nil {
+		t.Fatalf("f.RunFunction(...): unexpected error: %v", err)
+	}
+
+	want := map[string]map[string]any{
+		"bucket": {
+			"apiVersion": "storage.gcp.upbound.io/v1beta1",
+			"kind":       "Bucket",
+			"spec": map[string]any{"forProvider": map[string]any{
+				"labels": map[string]any{"existing": "label", "added": "tag", "external": "fromObserved"},
+			}},
+		},
+		"vpc": {
+			"apiVersion": "ec2.aws.upbound.io/v1beta1",
+			"kind":       "VPC",
+			"spec": map[string]any{"forProvider": map[string]any{
+				"tags": map[string]any{"existing": "tag", "added": "tag", "external": "fromObserved"},
+			}},
+		},
+		"unsupported": {
+			"apiVersion": "example.crossplane.io/v1",
+			"kind":       "Other",
+			"spec":       map[string]any{"forProvider": map[string]any{"region": "us-east-1"}},
+		},
+	}
+
+	got := make(map[string]map[string]any)
+	for name, r := range rsp.GetDesired().GetResources() {
+		got[name] = r.GetResource().AsMap()
+	}
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("f.RunFunction(...): -want desired, +got desired:\n%s", diff)
 	}
 }
 
