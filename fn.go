@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane-contrib/function-tag-manager/input/v1beta1"
@@ -11,6 +12,7 @@ import (
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/errors"
@@ -23,22 +25,24 @@ type Function struct {
 	fnv1.FunctionRunnerServiceServer
 
 	log logging.Logger
+	ttl time.Duration
 	// filter determines which composed resources support tags, and which
 	// fields hold them. It's built once, rather than on every request.
 	filter filters.ResourceFilter
 }
 
 // NewFunction returns a Function that manages tags on the resources in the
-// built-in resource filter.
-func NewFunction(log logging.Logger) *Function {
-	return &Function{log: log, filter: filters.NewResourceFilter()}
+// built-in resource filter, and caches its responses for ttl unless the input
+// overrides it.
+func NewFunction(log logging.Logger, ttl time.Duration) *Function {
+	return &Function{log: log, ttl: ttl, filter: filters.NewResourceFilter()}
 }
 
 // RunFunction runs the Function.
 func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
 	f.log.Info("Running Function", "tag-manager", req.GetMeta().GetTag())
 
-	rsp := response.To(req, response.DefaultTTL)
+	rsp := response.To(req, f.ttl)
 
 	in := &v1beta1.ManagedTags{}
 
@@ -47,6 +51,14 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get Function input from %T", req))
 		return rsp, nil
 	}
+
+	ttl, err := resolveTTL(in.TTL, f.ttl)
+	if err != nil {
+		response.Fatal(rsp, err)
+		return rsp, nil
+	}
+
+	rsp.Meta.Ttl = durationpb.New(ttl)
 
 	oxr, err := request.GetObservedCompositeResource(req)
 	if err != nil {
@@ -138,6 +150,25 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	response.Normalf(rsp, "Successfully Processed tags")
 
 	return rsp, nil
+}
+
+// resolveTTL returns the TTL set in the Function input, or def if the input
+// doesn't set one. The input TTL is a Go duration string such as "5m".
+func resolveTTL(ttl string, def time.Duration) (time.Duration, error) {
+	if ttl == "" {
+		return def, nil
+	}
+
+	dur, err := time.ParseDuration(ttl)
+	if err != nil {
+		return 0, errors.Wrap(err, "cannot parse ttl")
+	}
+
+	if dur < 0 {
+		return 0, errors.New("ttl duration cannot be negative")
+	}
+
+	return dur, nil
 }
 
 // IgnoreResource whether this resource has a label or annotation set to ignore.
