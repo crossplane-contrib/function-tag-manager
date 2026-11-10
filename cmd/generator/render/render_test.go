@@ -2,8 +2,10 @@ package render
 
 import (
 	"bytes"
+	"go/format"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -25,6 +27,7 @@ func TestRender(t *testing.T) {
 
 	type args struct {
 		field        string
+		observed     string
 		resources    []Filter
 		templateFile string
 	}
@@ -67,7 +70,7 @@ func TestRender(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var out bytes.Buffer
 
-			err := Render(&out, tc.args.field, tc.args.resources, tc.args.templateFile)
+			err := Render(&out, tc.args.field, tc.args.observed, tc.args.resources, tc.args.templateFile)
 
 			if (err != nil) != tc.want.hasErr {
 				t.Fatalf("%s\nRender(): unexpected error state: %v", tc.reason, err)
@@ -77,5 +80,78 @@ func TestRender(t *testing.T) {
 				t.Errorf("%s\nRender(): -want, +got:\n%s", tc.reason, diff)
 			}
 		})
+	}
+}
+
+func TestRenderProviderTemplates(t *testing.T) {
+	resources := []Filter{
+		{GroupKind: "storage.gcp.upbound.io/Bucket", Enabled: true},
+		{GroupKind: "storage.gcp.upbound.io/BucketACL", Enabled: false},
+	}
+
+	cases := map[string]struct {
+		reason   string
+		field    string
+		observed string
+		want     []string
+		notWant  []string
+	}{
+		"DefaultObserved": {
+			reason:  "Should not override the observed field when none is given",
+			field:   "tags",
+			want:    []string{`NewProviderFilter("tags", map[string]bool{`, `"storage.gcp.upbound.io/Bucket":`},
+			notWant: []string{"WithObservedField"},
+		},
+		"SameObserved": {
+			reason:   "Should not override the observed field when it matches the field",
+			field:    "labels",
+			observed: "labels",
+			want:     []string{`NewProviderFilter("labels", map[string]bool{`},
+			notWant:  []string{"WithObservedField"},
+		},
+		"DistinctObserved": {
+			reason:   "Should override the observed field when it differs",
+			field:    "labels",
+			observed: "effectiveLabels",
+			want:     []string{`NewProviderFilter("labels", map[string]bool{`, `}).WithObservedField("effectiveLabels")`},
+		},
+		"QuotedField": {
+			reason: "Should quote the field so it can't break the generated Go",
+			field:  `a"b`,
+			want:   []string{`NewProviderFilter("a\"b", map[string]bool{`},
+		},
+	}
+
+	for _, provider := range []string{"aws", "azure"} {
+		templateFile := filepath.Join("..", "..", "..", "templates", provider+".tmpl")
+
+		for name, tc := range cases {
+			t.Run(provider+"/"+name, func(t *testing.T) {
+				var out bytes.Buffer
+
+				err := Render(&out, tc.field, tc.observed, resources, templateFile)
+				if err != nil {
+					t.Fatalf("%s\nRender(): unexpected error: %v", tc.reason, err)
+				}
+
+				// The output must always be valid Go.
+				formatted, err := format.Source(out.Bytes())
+				if err != nil {
+					t.Fatalf("%s\nRender(): output isn't valid Go: %v\n%s", tc.reason, err, out.String())
+				}
+
+				for _, w := range tc.want {
+					if !strings.Contains(string(formatted), w) {
+						t.Errorf("%s\nRender(): output doesn't contain %q:\n%s", tc.reason, w, formatted)
+					}
+				}
+
+				for _, nw := range tc.notWant {
+					if strings.Contains(string(formatted), nw) {
+						t.Errorf("%s\nRender(): output contains %q:\n%s", tc.reason, nw, formatted)
+					}
+				}
+			})
+		}
 	}
 }

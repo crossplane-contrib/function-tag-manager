@@ -20,18 +20,21 @@ type FilterList []Filter
 type Data struct {
 	// Field is the name of the spec.forProvider field that was examined.
 	Field string
+	// ObservedField is the name of the status.atProvider field that holds the
+	// tags that exist on the external resource. If empty it is the same as Field.
+	ObservedField string
 	// Resources lists whether each resource has Field.
 	Resources []Filter
 }
 
 // Render renders resource.
-func Render(writer io.Writer, field string, resources []Filter, templateFile string) error {
+func Render(writer io.Writer, field, observedField string, resources []Filter, templateFile string) error {
 	tmpl, err := template.New(filepath.Base(templateFile)).ParseFiles(templateFile)
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(writer, Data{Field: field, Resources: resources})
+	err = tmpl.Execute(writer, Data{Field: field, ObservedField: observedField, Resources: resources})
 	if err != nil {
 		return err
 	}

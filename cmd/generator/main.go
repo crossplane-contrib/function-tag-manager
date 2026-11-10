@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/crossplane-contrib/function-tag-manager/cmd/generator/render"
+	"github.com/crossplane-contrib/function-tag-manager/filters"
 	"github.com/crossplane/function-sdk-go"
 	"github.com/go-git/go-billy/v6"
 	"github.com/go-git/go-billy/v6/osfs"
@@ -27,6 +28,7 @@ type CLI struct {
 	RepoURL                 string `help:"Git repo to clone" default:"https://github.com/crossplane-contrib/provider-upjet-aws.git"`
 	CrossplanePackageCRDDir string `help:"Location of CRD files" default:"package/crds"`
 	Field                   string `help:"Name of the spec.forProvider field that holds tags" default:"tags"`
+	ObservedField           string `help:"Name of the status.atProvider field that holds the tags that exist on the external resource, if it differs from --field"`
 	OutputFile              string `help:"file to output generated Go code"`
 	GitBranchOriginMain     string `help:"Git branch to clone." default:"refs/remotes/origin/main"`
 	TemplateFile            string `help:"Go Text Template to use to render filters" default:"templates/aws.tmpl"`
@@ -57,6 +59,18 @@ func (c *CLI) Run() error {
 	log, err := function.NewLogger(c.Debug)
 	if err != nil {
 		return err
+	}
+
+	err = filters.ValidateField(c.Field)
+	if err != nil {
+		return errors.Wrap(err, "invalid --field")
+	}
+
+	if c.ObservedField != "" {
+		err = filters.ValidateField(c.ObservedField)
+		if err != nil {
+			return errors.Wrap(err, "invalid --observed-field")
+		}
 	}
 
 	log.Info("Generating resource filters from CRDs")
@@ -120,7 +134,7 @@ func (c *CLI) Run() error {
 
 	log.Debug("rendering template", "location", out.Name())
 
-	return render.Render(out, c.Field, filter, c.TemplateFile)
+	return render.Render(out, c.Field, c.ObservedField, filter, c.TemplateFile)
 }
 
 func main() {
