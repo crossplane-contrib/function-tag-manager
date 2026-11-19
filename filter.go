@@ -5,15 +5,16 @@ import (
 	"github.com/crossplane/function-sdk-go/resource"
 )
 
-// SupportedManagedResource returns true if a resource supports tags.
-func SupportedManagedResource(desired *resource.DesiredComposed, filter filters.ResourceFilter) bool {
+// ManagedField returns the fields that hold tags for a resource, and true if
+// the resource supports tags.
+func ManagedField(desired *resource.DesiredComposed, filter filters.ResourceFilter) (filters.TagFields, bool) {
 	gvk := desired.Resource.GroupVersionKind()
 
 	resource := gvk.Group + "/" + gvk.Kind
-	if val, ok := filter[resource]; ok {
-		return val
+	if fields, ok := filter[resource]; ok {
+		return fields, true
 	}
 
 	// Filter out any remaining resources
-	return false
+	return filters.TagFields{}, false
 }
