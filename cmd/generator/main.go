@@ -115,7 +115,7 @@ func (c *CLI) Run() error {
 
 	log.Debug("examining CRD files", "directory", c.CrossplanePackageCRDDir)
 
-	filter, err := ExamineFieldFromCRDVersions(bf, g.CRDDir, c.Field)
+	filter, err := ExamineFieldFromCRDVersions(bf, g.CRDDir, c.Field, c.ObservedField)
 	if err != nil {
 		return err
 	}

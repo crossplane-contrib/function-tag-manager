@@ -33,9 +33,14 @@ type Function struct {
 
 // NewFunction returns a Function that manages tags on the resources in the
 // built-in resource filter, and caches its responses for ttl unless the input
-// overrides it.
-func NewFunction(log logging.Logger, ttl time.Duration) *Function {
-	return &Function{log: log, ttl: ttl, filter: filters.NewResourceFilter()}
+// overrides it. It returns an error if the built-in resource filter is invalid.
+func NewFunction(log logging.Logger, ttl time.Duration) (*Function, error) {
+	filter, err := filters.NewResourceFilter()
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot build resource filter")
+	}
+
+	return &Function{log: log, ttl: ttl, filter: filter}, nil
 }
 
 // RunFunction runs the Function.

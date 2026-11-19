@@ -17,13 +17,17 @@ import (
 )
 
 const (
+	fieldAtProvider  = "atProvider"
 	fieldForProvider = "forProvider"
 	fieldSpec        = "spec"
+	fieldStatus      = "status"
 )
 
 // ExamineFieldFromCRDVersions walks a directory of CRDs and
-// determines if a field exists in spec.forProvider.
-func ExamineFieldFromCRDVersions(f billy.Filesystem, root, field string) (render.FilterList, error) {
+// determines if a field exists in spec.forProvider. If observedField isn't
+// empty, a resource only supports tags if status.atProvider.<observedField>
+// also exists, because the function reads existing tags from it.
+func ExamineFieldFromCRDVersions(f billy.Filesystem, root, field, observedField string) (render.FilterList, error) {
 	filter := render.FilterList{}
 	err := util.Walk(f, root, func(path string, info fs.FileInfo, e error) error {
 		if e != nil {
@@ -65,10 +69,16 @@ func ExamineFieldFromCRDVersions(f billy.Filesystem, root, field string) (render
 			}
 
 			schema := storedVersion.Schema
-			// Look for the field at fieldpath "spec.forProvider.<field>"
+			// Look for the field at fieldpath "spec.forProvider.<field>", and
+			// the observed field at "status.atProvider.<observedField>"
 			if schema != nil && schema.OpenAPIV3Schema != nil {
 				key := crd.Spec.Group + "/" + crd.Spec.Names.Kind
 				hasField := checkFieldPath(schema.OpenAPIV3Schema, []string{fieldSpec, fieldForProvider, field})
+
+				if observedField != "" {
+					hasField = hasField && checkFieldPath(schema.OpenAPIV3Schema, []string{fieldStatus, fieldAtProvider, observedField})
+				}
+
 				filter = append(filter, render.Filter{GroupKind: key, Enabled: hasField})
 			}
 		}

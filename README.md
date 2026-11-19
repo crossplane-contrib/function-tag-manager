@@ -245,7 +245,9 @@ they accept tags in. For example, Terraform-based GCP resources only list the la
 `status.atProvider.labels`, and labels set outside Crossplane appear in `status.atProvider.effectiveLabels`.
 `ignoreTags` reads the existing tags from `status.atProvider`, so pass `--observed-field` (for example
 `--field=labels --observed-field=effectiveLabels`) to read them from that field instead. It defaults to
-the value of `--field`. Both flags must be a single field name, not a dotted path.
+the value of `--field`. When `--observed-field` is set, a resource is only marked as supporting tags if
+its CRD has both `spec.forProvider.<field>` and `status.atProvider.<observed-field>`. Both flags must be a
+single field name, not a dotted path.
 
 ## Developing this Function
 
