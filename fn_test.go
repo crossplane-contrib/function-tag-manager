@@ -148,7 +148,11 @@ func TestRunFunction(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			f := NewFunction(logging.NewNopLogger(), response.DefaultTTL)
+			f, err := NewFunction(logging.NewNopLogger(), response.DefaultTTL)
+			if err != nil {
+				t.Fatalf("NewFunction(...): %v", err)
+			}
+
 			rsp, err := f.RunFunction(tc.args.ctx, tc.args.req)
 
 			if diff := cmp.Diff(tc.want.rsp, rsp,
@@ -317,7 +321,11 @@ func TestRunFunctionCacheTTL(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			f := &Function{log: logging.NewNopLogger(), ttl: tc.args.ttl}
+			f, err := NewFunction(logging.NewNopLogger(), tc.args.ttl)
+			if err != nil {
+				t.Fatalf("NewFunction(...): %v", err)
+			}
+
 			rsp, err := f.RunFunction(tc.args.ctx, tc.args.req)
 
 			if diff := cmp.Diff(tc.want.rsp, rsp, protocmp.Transform()); diff != "" {

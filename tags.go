@@ -106,7 +106,7 @@ func (f *Function) ResolveIgnoreTags(in []v1beta1.IgnoreTag, oxr *resource.Compo
 
 	err := fieldpath.Pave(observed.Resource.Object).GetValueInto("status.atProvider."+observedField, &observedTags)
 	if err != nil {
-		f.log.Debug("unable to fetch tags from observed resource", observed.Resource.GetName(), observed.Resource.GroupVersionKind().String())
+		f.log.Debug("unable to fetch tags from observed resource", "resource", observed.Resource.GetName(), "gvk", observed.Resource.GroupVersionKind().String(), "field", "status.atProvider."+observedField, "error", err)
 		return nil
 	}
 

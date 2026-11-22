@@ -11,7 +11,10 @@ import (
 )
 
 func TestManagedField(t *testing.T) {
-	ResourceFilter := filters.NewResourceFilter()
+	ResourceFilter, err := filters.NewResourceFilter()
+	if err != nil {
+		t.Fatalf("filters.NewResourceFilter(): %v", err)
+	}
 
 	type args struct {
 		desired *resource.DesiredComposed
@@ -176,7 +179,7 @@ func TestManagedField(t *testing.T) {
 						},
 					}},
 				},
-				filter: filters.NewResourceFilter(),
+				filter: ResourceFilter,
 			},
 			want: false,
 		},

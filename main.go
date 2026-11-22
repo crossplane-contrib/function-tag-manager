@@ -38,7 +38,12 @@ func (c *CLI) Run() error {
 		return err
 	}
 
-	return function.Serve(NewFunction(log, c.TTL),
+	f, err := NewFunction(log, c.TTL)
+	if err != nil {
+		return err
+	}
+
+	return function.Serve(f,
 		function.Listen(c.Network, c.Address),
 		function.MTLSCertificates(c.TLSCertsDir),
 		function.Insecure(c.Insecure),

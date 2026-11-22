@@ -420,12 +420,51 @@ spec:
                     type: array
 `
 
+	// CRD with labels and an effectiveLabels status field
+	crdWithEffectiveLabels := `apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: instances.compute.gcp.upbound.io
+spec:
+  group: compute.gcp.upbound.io
+  names:
+    kind: Instance
+    plural: instances
+  scope: Cluster
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              forProvider:
+                type: object
+                properties:
+                  labels:
+                    type: object
+          status:
+            type: object
+            properties:
+              atProvider:
+                type: object
+                properties:
+                  effectiveLabels:
+                    type: object
+`
+
 	type testCase struct {
 		reason string
 		field  string
-		files  map[string]string
-		want   render.FilterList
-		errStr string
+		// observedField is passed as-is, so empty means not set.
+		observedField string
+		files         map[string]string
+		want          render.FilterList
+		errStr        string
 	}
 
 	cases := map[string]testCase{
@@ -542,6 +581,19 @@ spec:
 				{GroupKind: "s3.aws.upbound.io/Bucket", Enabled: false},
 			},
 		},
+		"ObservedField": {
+			reason:        "Should require the observed field in status.atProvider when it's set",
+			field:         "labels",
+			observedField: "effectiveLabels",
+			files: map[string]string{
+				"instance.yaml": crdWithEffectiveLabels,
+				"bucket.yaml":   crdWithLabels,
+			},
+			want: render.FilterList{
+				{GroupKind: "compute.gcp.upbound.io/Instance", Enabled: true},
+				{GroupKind: "storage.gcp.upbound.io/Bucket", Enabled: false},
+			},
+		},
 		"SingleCRDWithTagsIncorrectType": {
 			reason: "Should correctly identify CRD with tags field of incorrect type",
 			files: map[string]string{
@@ -580,7 +632,7 @@ spec:
 			}
 
 			// Run the function
-			got, err := ExamineFieldFromCRDVersions(fs, testRootDir, field)
+			got, err := ExamineFieldFromCRDVersions(fs, testRootDir, field, tc.observedField)
 
 			// Check error
 			if tc.errStr != "" {

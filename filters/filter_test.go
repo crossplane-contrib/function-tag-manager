@@ -7,7 +7,10 @@ import (
 )
 
 func TestNewResourceFilter(t *testing.T) {
-	got := NewResourceFilter()
+	got, err := NewResourceFilter()
+	if err != nil {
+		t.Fatalf("NewResourceFilter(): %v", err)
+	}
 
 	cases := map[string]struct {
 		reason    string
@@ -56,6 +59,7 @@ func TestNewResourceFilterFields(t *testing.T) {
 		reason    string
 		providers []ProviderFilter
 		want      ResourceFilter
+		wantErr   bool
 	}{
 		"PerProviderFields": {
 			reason: "Each provider's resources map to that provider's field",
@@ -94,35 +98,53 @@ func TestNewResourceFilterFields(t *testing.T) {
 				"storage.gcp.upbound.io/Bucket": {Spec: "labels", Observed: "labels"},
 			},
 		},
-		"EmptyFieldSkipped": {
-			reason: "A provider without a field would write tags to spec.forProvider. so it's skipped",
+		"EmptyField": {
+			reason: "A provider without a field would write tags to spec.forProvider.",
 			providers: []ProviderFilter{
 				NewProviderFilter("", map[string]bool{"storage.gcp.upbound.io/Bucket": true}),
 				NewProviderFilter("tags", map[string]bool{"ec2.aws.upbound.io/VPC": true}),
 			},
-			want: ResourceFilter{
-				"ec2.aws.upbound.io/VPC": {Spec: "tags", Observed: "tags"},
-			},
+			wantErr: true,
 		},
-		"DottedFieldSkipped": {
-			reason: "A dotted field is a path, not a field, so it's skipped",
+		"DottedField": {
+			reason: "A dotted field is a path, not a field",
 			providers: []ProviderFilter{
 				NewProviderFilter("foo.bar", map[string]bool{"storage.gcp.upbound.io/Bucket": true}),
 			},
-			want: ResourceFilter{},
+			wantErr: true,
 		},
-		"InvalidObservedFieldSkipped": {
-			reason: "A provider with an invalid observed field is skipped",
+		"InvalidObservedField": {
+			reason: "A provider with an invalid observed field is an error",
 			providers: []ProviderFilter{
 				NewProviderFilter("labels", map[string]bool{"storage.gcp.upbound.io/Bucket": true}).WithObservedField("a.b"),
 			},
-			want: ResourceFilter{},
+			wantErr: true,
+		},
+		"DuplicateResource": {
+			reason: "A resource listed by more than one provider is ambiguous",
+			providers: []ProviderFilter{
+				NewProviderFilter("tags", map[string]bool{"storage.gcp.upbound.io/Bucket": true}),
+				NewProviderFilter("labels", map[string]bool{"storage.gcp.upbound.io/Bucket": true}),
+			},
+			wantErr: true,
+		},
+		"DuplicateUnsupportedResource": {
+			reason: "A resource is ambiguous even if a provider says it doesn't support tags",
+			providers: []ProviderFilter{
+				NewProviderFilter("tags", map[string]bool{"storage.gcp.upbound.io/Bucket": true}),
+				NewProviderFilter("labels", map[string]bool{"storage.gcp.upbound.io/Bucket": false}),
+			},
+			wantErr: true,
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := newResourceFilter(tc.providers...)
+			got, err := newResourceFilter(tc.providers...)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("%s\nnewResourceFilter(): err = %v, wantErr %v", tc.reason, err, tc.wantErr)
+			}
+
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("%s\nnewResourceFilter(): -want, +got:\n%s", tc.reason, diff)
 			}
