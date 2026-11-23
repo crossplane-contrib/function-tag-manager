@@ -3,9 +3,9 @@
 `function-tag-manager` is a [Crossplane](https://crossplane.io) function that allows
 Platform Operators to manage Cloud tags on managed resources.
 
-AWS and Azure resources managed by upjet-based providers that support tags are
-supported, and the function can manage tags for both cluster and namespace-scoped
-resources.
+AWS, Azure and GCP resources managed by upjet-based providers that support tags
+(`labels` on GCP) are supported, and the function can manage tags for both cluster
+and namespace-scoped resources.
 
 There several use cases for this Function:
 
@@ -199,7 +199,7 @@ metadata:
 
 ## Filtering Resources
 
-This function supports both AWS and Azure resources that allow setting of tags.
+This function supports AWS, Azure and GCP resources that allow setting of tags.
 
 Counts below are per resource kind. Starting with the 2.x providers both Cluster-scoped and
 Namespace-scoped resources are supported, so each kind has two Custom Resource Definitions
@@ -225,9 +225,41 @@ resources are newly classified as taggable. If you manage `cloudfront/Function`,
 Azure provider to at least v2.7.0 — older providers will reject the tags field with a Kubernetes
 API validation error.
 
+### GCP Resources
+
+GCP calls tags `labels`, so for GCP resources the function reads and writes `spec.forProvider.labels`
+(and `status.atProvider.labels` for `ignoreTags`). The function's inputs are unchanged: `addTags`,
+`ignoreTags` and `removeTags` apply to a resource's labels exactly as they apply to tags elsewhere.
+
+A scan of the v3.1.0 GCP provider shows that 112 resource kinds have both a `labels` map and a
+`status.atProvider.labels` map, which `ignoreTags` reads, and 313 do not. Both Cluster-scoped (`gcp.upbound.io`) and Namespace-scoped
+(`gcp.m.upbound.io`) API groups are supported.
+
+The GCP Provider CRDs were scanned using the same generator, with `--field=labels --observed-field=labels`, to create the list in [filters/zz_provider-upjet-gcp.go](filters/zz_provider-upjet-gcp.go).
+
+Some things to be aware of:
+
+- Only the `labels` field is managed. A few GCP resources name the field differently, such as
+  `userLabels` on `monitoring` resources and `resourceLabels` on `container/Cluster`. These
+  resources are not managed by this function. Likewise, the `tags` fields on some GCP resources are
+  network tags or resource manager tags, not labels, and are never changed.
+- GCP has requirements for labels, and the function checks the labels it adds to GCP resources
+  against them: keys are 1 to 63 characters, start with a lowercase letter, and, like values,
+  contain only lowercase letters (international characters are allowed), numbers, underscores and
+  dashes. Values can be empty and are at most 63 characters. A resource can have at most 64 labels.
+  If a label breaks a requirement, the function returns a fatal result that names the composed
+  resource, the label and the requirement, and no resources are changed by that step. This applies
+  to every GCP resource in the Composition, so a key such as `Environment` that is fine for AWS will
+  stop the pipeline when it is added to a GCP resource. Labels that were already on the resource
+  before the function ran are not checked, but they count towards the limit of 64. AWS and Azure
+  tags are not validated.
+- GCP `labels` are non-authoritative: labels added to a resource outside of Crossplane don't cause
+  drift. `ignoreTags` still reads `status.atProvider.labels`, which holds the labels that Crossplane
+  is managing on the resource.
+
 ### Regenerating Filters
 
-To regenerate the resource filters for both providers:
+To regenerate the resource filters for all providers:
 
 ```shell
 cd filters
