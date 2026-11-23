@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
@@ -648,5 +651,316 @@ func TestIgnoreResource(t *testing.T) {
 				t.Errorf("%s\nignoreResource(...): -want: %t, +got: %t", tc.reason, tc.want, res)
 			}
 		})
+	}
+}
+
+func TestRunFunctionGCP(t *testing.T) {
+	req := &fnv1.RunFunctionRequest{
+		Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+		Input: resource.MustStructJSON(`{
+			"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+			"kind": "ManagedTags",
+			"addTags": [{"type": "FromValue", "policy": "Replace", "tags": {"team": "platform"}}],
+			"ignoreTags": [{"type": "FromValue", "policy": "Replace", "keys": ["external"]}],
+			"removeTags": [{"type": "FromValue", "keys": ["remove"]}]
+		}`),
+		Observed: &fnv1.State{
+			Composite: &fnv1.Resource{Resource: resource.MustStructJSON(`{
+				"apiVersion": "example.crossplane.io/v1",
+				"kind": "XR",
+				"metadata": {"name": "xr"}
+			}`)},
+			Resources: map[string]*fnv1.Resource{
+				"bucket": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1",
+					"kind": "Bucket",
+					"metadata": {"name": "bucket"},
+					"status": {"atProvider": {"labels": {"external": "set-elsewhere"}, "tags": {"external": "not-a-label"}}}
+				}`)},
+			},
+		},
+		Desired: &fnv1.State{
+			Resources: map[string]*fnv1.Resource{
+				"bucket": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1",
+					"kind": "Bucket",
+					"metadata": {"name": "bucket"},
+					"spec": {"forProvider": {"labels": {"existing": "label", "remove": "me"}}}
+				}`)},
+				"namespacedBucket": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.m.upbound.io/v1beta1",
+					"kind": "Bucket",
+					"metadata": {"name": "namespaced-bucket", "namespace": "default"},
+					"spec": {"forProvider": {}}
+				}`)},
+				"bucketACL": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1",
+					"kind": "BucketACL",
+					"metadata": {"name": "bucket-acl"},
+					"spec": {"forProvider": {}}
+				}`)},
+				"alertPolicy": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "monitoring.gcp.upbound.io/v1beta1",
+					"kind": "AlertPolicy",
+					"metadata": {"name": "alert-policy"},
+					"spec": {"forProvider": {"userLabels": {"existing": "label"}}}
+				}`)},
+			},
+		},
+	}
+
+	want := map[string]map[string]any{
+		"bucket": {
+			"labels": map[string]any{"existing": "label", "team": "platform", "external": "set-elsewhere"},
+		},
+		"namespacedBucket": {
+			"labels": map[string]any{"team": "platform"},
+		},
+		"bucketACL": {},
+		"alertPolicy": {
+			"userLabels": map[string]any{"existing": "label"},
+		},
+	}
+
+	f, err := NewFunction(logging.NewNopLogger(), response.DefaultTTL)
+	if err != nil {
+		t.Fatalf("NewFunction(...): %v", err)
+	}
+
+	rsp, err := f.RunFunction(context.Background(), req)
+	if err != nil {
+		t.Fatalf("f.RunFunction(...): unexpected error: %v", err)
+	}
+
+	got := map[string]map[string]any{}
+
+	for name, r := range rsp.GetDesired().GetResources() {
+		forProvider, _ := r.GetResource().AsMap()["spec"].(map[string]any)["forProvider"].(map[string]any)
+		got[name] = forProvider
+	}
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("f.RunFunction(...): spec.forProvider: -want, +got:\n%s", diff)
+	}
+}
+
+func TestRunFunctionLabelRules(t *testing.T) {
+	manyLabels := func(n int) string {
+		labels := make([]string, 0, n)
+		for i := range n {
+			labels = append(labels, fmt.Sprintf("%q: %q", fmt.Sprintf("key%d", i), "v"))
+		}
+
+		return strings.Join(labels, ",")
+	}
+
+	request := func(addTags, gvk, forProvider string) *fnv1.RunFunctionRequest {
+		apiVersion, kind, _ := strings.Cut(gvk, "|")
+
+		return &fnv1.RunFunctionRequest{
+			Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+			Input: resource.MustStructJSON(`{
+				"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+				"kind": "ManagedTags",
+				"addTags": [{"type": "FromValue", "policy": "Replace", "tags": {` + addTags + `}}]
+			}`),
+			Observed: &fnv1.State{
+				Composite: &fnv1.Resource{Resource: resource.MustStructJSON(`{
+					"apiVersion": "example.crossplane.io/v1", "kind": "XR", "metadata": {"name": "xr"}
+				}`)},
+			},
+			Desired: &fnv1.State{
+				Resources: map[string]*fnv1.Resource{
+					"bucket": {Resource: resource.MustStructJSON(`{
+						"apiVersion": "` + apiVersion + `",
+						"kind": "` + kind + `",
+						"metadata": {"name": "bucket"},
+						"spec": {"forProvider": ` + forProvider + `}
+					}`)},
+				},
+			},
+		}
+	}
+
+	withRemoveTags := func(req *fnv1.RunFunctionRequest, keys string) *fnv1.RunFunctionRequest {
+		in := req.GetInput().AsMap()
+		in["removeTags"] = []any{map[string]any{"type": "FromValue", "keys": resource.MustStructJSON(`{"k": [` + keys + `]}`).AsMap()["k"]}}
+
+		input, err := structpb.NewStruct(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Input = input
+
+		return req
+	}
+
+	const (
+		gcpBucket = "storage.gcp.upbound.io/v1beta1|Bucket"
+		awsBucket = "s3.aws.upbound.io/v1beta1|Bucket"
+	)
+
+	cases := map[string]struct {
+		reason    string
+		req       *fnv1.RunFunctionRequest
+		wantFatal []string
+		wantTags  map[string]any
+		wantCount int
+	}{
+		"InvalidGCPKey": {
+			reason:    "A GCP label key with uppercase letters is rejected, naming the resource, the key and the rule",
+			req:       request(`"Environment": "prod"`, gcpBucket, `{}`),
+			wantFatal: []string{`"bucket"`, `"Environment"`, "label key", "lowercase"},
+		},
+		"InvalidGCPValue": {
+			reason:    "A GCP label value with uppercase letters is rejected",
+			req:       request(`"env": "Prod"`, gcpBucket, `{}`),
+			wantFatal: []string{`"bucket"`, `"env"`, "label value", "lowercase"},
+		},
+		"TooManyGCPLabels": {
+			reason:    "Adding labels past the GCP limit is rejected",
+			req:       request(`"a": "1", "b": "2"`, gcpBucket, `{"labels": {`+manyLabels(63)+`}}`),
+			wantFatal: []string{`"bucket"`, "limit of 64"},
+		},
+		"RemovedLabelsAreNotCounted": {
+			reason:    "Labels that are removed don't count towards the GCP limit",
+			req:       withRemoveTags(request(`"a": "1", "b": "2"`, gcpBucket, `{"labels": {`+manyLabels(63)+`}}`), `"key0", "key1"`),
+			wantCount: 63,
+		},
+		"GCPLabelsAtLimit": {
+			reason:    "A resource can have exactly 64 labels",
+			req:       request(`"a": "1"`, gcpBucket, `{"labels": {`+manyLabels(63)+`}}`),
+			wantCount: 64,
+		},
+		"ValidGCPLabels": {
+			reason:   "Valid GCP labels are added",
+			req:      request(`"team": "platform", "cost-center": "1234"`, gcpBucket, `{}`),
+			wantTags: map[string]any{"team": "platform", "cost-center": "1234"},
+		},
+		"ExistingInvalidGCPLabelIsNotChecked": {
+			reason:   "Labels that the Function didn't add aren't validated",
+			req:      request(`"team": "platform"`, gcpBucket, `{"labels": {"Legacy": "Value"}}`),
+			wantTags: map[string]any{"Legacy": "Value", "team": "platform"},
+		},
+		"AWSTagsAreNotRestricted": {
+			reason:   "Uppercase tags are fine for AWS, which has no rules",
+			req:      request(`"Environment": "Prod"`, awsBucket, `{}`),
+			wantTags: map[string]any{"Environment": "Prod"},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f, err := NewFunction(logging.NewNopLogger(), response.DefaultTTL)
+			if err != nil {
+				t.Fatalf("NewFunction(...): %v", err)
+			}
+
+			rsp, err := f.RunFunction(context.Background(), tc.req)
+			if err != nil {
+				t.Fatalf("%s\nf.RunFunction(...): unexpected error: %v", tc.reason, err)
+			}
+
+			var fatal string
+
+			for _, r := range rsp.GetResults() {
+				if r.GetSeverity() == fnv1.Severity_SEVERITY_FATAL {
+					fatal = r.GetMessage()
+				}
+			}
+
+			if len(tc.wantFatal) > 0 {
+				if fatal == "" {
+					t.Fatalf("%s\nf.RunFunction(...): want a fatal result, got none", tc.reason)
+				}
+
+				for _, s := range tc.wantFatal {
+					if !strings.Contains(fatal, s) {
+						t.Errorf("%s\nf.RunFunction(...): fatal message %q doesn't contain %q", tc.reason, fatal, s)
+					}
+				}
+
+				return
+			}
+
+			if fatal != "" {
+				t.Fatalf("%s\nf.RunFunction(...): unexpected fatal result: %s", tc.reason, fatal)
+			}
+
+			forProvider, _ := rsp.GetDesired().GetResources()["bucket"].GetResource().AsMap()["spec"].(map[string]any)["forProvider"].(map[string]any)
+			labelsOrTags, _ := forProvider["labels"].(map[string]any)
+
+			if labelsOrTags == nil {
+				labelsOrTags, _ = forProvider["tags"].(map[string]any)
+			}
+
+			if tc.wantCount > 0 {
+				if got := len(labelsOrTags); got != tc.wantCount {
+					t.Errorf("%s\nf.RunFunction(...): got %d tags, want %d", tc.reason, got, tc.wantCount)
+				}
+
+				return
+			}
+
+			if diff := cmp.Diff(tc.wantTags, labelsOrTags); diff != "" {
+				t.Errorf("%s\nf.RunFunction(...): tags: -want, +got:\n%s", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestRunFunctionInvalidLabelsChangeNothing(t *testing.T) {
+	req := &fnv1.RunFunctionRequest{
+		Meta: &fnv1.RequestMeta{Tag: "tag-manager"},
+		Input: resource.MustStructJSON(`{
+			"apiVersion": "tag-manager.fn.crossplane.io/v1beta1",
+			"kind": "ManagedTags",
+			"addTags": [{"type": "FromValue", "policy": "Replace", "tags": {"Environment": "Prod"}}]
+		}`),
+		Observed: &fnv1.State{
+			Composite: &fnv1.Resource{Resource: resource.MustStructJSON(`{
+				"apiVersion": "example.crossplane.io/v1", "kind": "XR", "metadata": {"name": "xr"}
+			}`)},
+		},
+		Desired: &fnv1.State{
+			Resources: map[string]*fnv1.Resource{
+				"aws": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "s3.aws.upbound.io/v1beta1", "kind": "Bucket",
+					"metadata": {"name": "aws"}, "spec": {"forProvider": {}}
+				}`)},
+				"gcp": {Resource: resource.MustStructJSON(`{
+					"apiVersion": "storage.gcp.upbound.io/v1beta1", "kind": "Bucket",
+					"metadata": {"name": "gcp"}, "spec": {"forProvider": {}}
+				}`)},
+			},
+		},
+	}
+
+	f, err := NewFunction(logging.NewNopLogger(), response.DefaultTTL)
+	if err != nil {
+		t.Fatalf("NewFunction(...): %v", err)
+	}
+
+	rsp, err := f.RunFunction(context.Background(), req)
+	if err != nil {
+		t.Fatalf("f.RunFunction(...): unexpected error: %v", err)
+	}
+
+	var fatal bool
+
+	for _, r := range rsp.GetResults() {
+		fatal = fatal || r.GetSeverity() == fnv1.Severity_SEVERITY_FATAL
+	}
+
+	if !fatal {
+		t.Fatal("f.RunFunction(...): want a fatal result, got none")
+	}
+
+	for name, r := range rsp.GetDesired().GetResources() {
+		forProvider, _ := r.GetResource().AsMap()["spec"].(map[string]any)["forProvider"].(map[string]any)
+		if len(forProvider) != 0 {
+			t.Errorf("f.RunFunction(...): resource %q was changed: %v", name, forProvider)
+		}
 	}
 }

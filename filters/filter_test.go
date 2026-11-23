@@ -34,6 +34,34 @@ func TestNewResourceFilter(t *testing.T) {
 			want:      TagFields{Spec: "tags", Observed: "tags"},
 			wantOK:    true,
 		},
+		"GCPSupported": {
+			reason:    "GCP resources that support labels map to the labels field",
+			groupKind: "storage.gcp.upbound.io/Bucket",
+			want:      TagFields{Spec: "labels", Observed: "labels"},
+			wantOK:    true,
+		},
+		"GCPNamespacedSupported": {
+			reason:    "Namespaced GCP resources map to the labels field",
+			groupKind: "storage.gcp.m.upbound.io/Bucket",
+			want:      TagFields{Spec: "labels", Observed: "labels"},
+			wantOK:    true,
+		},
+		"GCPUnsupported": {
+			reason:    "GCP resources without a labels field are absent",
+			groupKind: "storage.gcp.upbound.io/BucketACL",
+		},
+		"GCPUserLabels": {
+			reason:    "GCP resources that name the field userLabels are not managed",
+			groupKind: "monitoring.gcp.upbound.io/AlertPolicy",
+		},
+		"GCPResourceLabels": {
+			reason:    "GCP resources that name the field resourceLabels are not managed",
+			groupKind: "container.gcp.upbound.io/Cluster",
+		},
+		"GCPLabelsNotAMap": {
+			reason:    "GCP resources whose labels field is not a map are not managed",
+			groupKind: "monitoring.gcp.upbound.io/MetricDescriptor",
+		},
 		"Unknown": {
 			reason:    "Unknown resources are absent",
 			groupKind: "example.crossplane.io/Unknown",

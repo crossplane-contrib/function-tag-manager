@@ -15,16 +15,21 @@ generate() {
 	provider=$1
 	version=$2
 	template=$3
+	shift 3
 
 	go run ../cmd/generator/. --debug \
 		--output-file="zz_${provider}.go" \
 		--repository-dir="../_work/providers/${provider}-${version}" \
 		--repo-url="https://github.com/crossplane-contrib/${provider}.git" \
 		--template-file="../templates/${template}.tmpl" \
-		--git-branch-origin-main="refs/tags/${version}"
+		--git-branch-origin-main="refs/tags/${version}" \
+		"$@"
 }
 
 generate provider-upjet-aws "${UPJET_AWS_VERSION}" aws
 generate provider-upjet-azure "${UPJET_AZURE_VERSION}" azure
+# GCP calls the field that holds tags "labels". The observed field is checked
+# too, so a kind without status.atProvider.labels isn't enabled.
+generate provider-upjet-gcp "${UPJET_GCP_VERSION}" gcp --field=labels --observed-field=labels
 
 go fmt ./...
