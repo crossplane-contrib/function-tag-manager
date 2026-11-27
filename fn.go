@@ -152,7 +152,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	response.Normalf(rsp, "Successfully Processed tags")
+	f.log.Debug("Successfully processed tags")
 
 	return rsp, nil
 }
