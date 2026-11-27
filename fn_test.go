@@ -134,13 +134,6 @@ func TestRunFunction(t *testing.T) {
 				rsp: &fnv1.RunFunctionResponse{
 					Desired: &fnv1.State{},
 					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(response.DefaultTTL)},
-					Results: []*fnv1.Result{
-						{
-							Severity: fnv1.Severity_SEVERITY_NORMAL,
-							Message:  "Successfully Processed tags",
-							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
-						},
-					},
 				},
 			},
 		},
@@ -202,13 +195,6 @@ func TestRunFunctionCacheTTL(t *testing.T) {
 				rsp: &fnv1.RunFunctionResponse{
 					Desired: &fnv1.State{},
 					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(5 * time.Minute)},
-					Results: []*fnv1.Result{
-						{
-							Severity: fnv1.Severity_SEVERITY_NORMAL,
-							Message:  "Successfully Processed tags",
-							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
-						},
-					},
 				},
 			},
 		},
@@ -229,13 +215,6 @@ func TestRunFunctionCacheTTL(t *testing.T) {
 				rsp: &fnv1.RunFunctionResponse{
 					Desired: &fnv1.State{},
 					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(0)},
-					Results: []*fnv1.Result{
-						{
-							Severity: fnv1.Severity_SEVERITY_NORMAL,
-							Message:  "Successfully Processed tags",
-							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
-						},
-					},
 				},
 			},
 		},
@@ -255,13 +234,6 @@ func TestRunFunctionCacheTTL(t *testing.T) {
 				rsp: &fnv1.RunFunctionResponse{
 					Desired: &fnv1.State{},
 					Meta:    &fnv1.ResponseMeta{Tag: "tag-manager", Ttl: durationpb.New(30 * time.Second)},
-					Results: []*fnv1.Result{
-						{
-							Severity: fnv1.Severity_SEVERITY_NORMAL,
-							Message:  "Successfully Processed tags",
-							Target:   fnv1.Target_TARGET_COMPOSITE.Enum(),
-						},
-					},
 				},
 			},
 		},
